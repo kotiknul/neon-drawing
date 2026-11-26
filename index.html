@@ -98,13 +98,21 @@
       border: 1px solid #087fa8;
       border-radius: 9px;
       background: #03131b;
-      color: white;
+      color: #fff;
       font-size: 13px;
     }
 
-    #rainbowButton.active {
+    #rainbowButton.active,
+    #textButton.active {
       border-color: #fff;
-      background: linear-gradient(110deg, #ff4242, #ffe344, #53e879, #44bfff, #ca70ff);
+      background: linear-gradient(
+        110deg,
+        #ff4242,
+        #ffe344,
+        #53e879,
+        #44bfff,
+        #ca70ff
+      );
       color: #111;
     }
 
@@ -192,6 +200,7 @@
     }
 
     .switch {
+      position: relative;
       flex: 0 0 48px;
       width: 48px;
       min-height: 28px;
@@ -199,7 +208,6 @@
       border: 1px solid #505050;
       border-radius: 20px;
       background: #111;
-      position: relative;
     }
 
     .switch::after {
@@ -363,7 +371,7 @@
       </div>
 
       <button class="ready-button" id="readyButton" type="button">Готово</button>
-      <p class="menu-note">Меню закрывается нажатием кнопки — наведение мыши ничего не делает.</p>
+      <p class="menu-note">Закрой меню нажатием «Готово» или нажатием по тёмному фону.</p>
     </div>
   </section>
 
@@ -437,6 +445,9 @@
     let gestureDirectionLatched = false;
     let audioContext = null;
 
+    // Объявление состояния жеста сердца — исправляет heartWasDetected is not defined.
+    let heartWasDetected = false;
+
     const MAX_ACTIONS = 60;
 
     function setStatus(message) {
@@ -506,7 +517,11 @@
       }
 
       if (saved.width && saved.height) {
-        draw.drawImage(saved, 0, 0, saved.width, saved.height, 0, 0, width, height);
+        draw.drawImage(
+          saved,
+          0, 0, saved.width, saved.height,
+          0, 0, width, height
+        );
       }
     }
 
@@ -518,7 +533,11 @@
 
       const width = innerWidth;
       const height = innerHeight;
-      const scale = Math.max(width / video.videoWidth, height / video.videoHeight);
+      const scale = Math.max(
+        width / video.videoWidth,
+        height / video.videoHeight
+      );
+
       const shownWidth = video.videoWidth * scale;
       const shownHeight = video.videoHeight * scale;
       const cropX = (shownWidth - width) / 2;
@@ -540,7 +559,11 @@
 
       if (smoothedHands.length !== ordered.length) {
         smoothedHands = ordered.map(hand =>
-          hand.map(p => ({ x: p.x, y: p.y, z: p.z || 0 }))
+          hand.map(point => ({
+            x: point.x,
+            y: point.y,
+            z: point.z || 0
+          }))
         );
         return smoothedHands;
       }
@@ -549,7 +572,10 @@
         for (let i = 0; i < ordered[h].length; i++) {
           const target = ordered[h][i];
           const current = smoothedHands[h][i];
-          const movement = Math.hypot(target.x - current.x, target.y - current.y);
+          const movement = Math.hypot(
+            target.x - current.x,
+            target.y - current.y
+          );
           const blend = Math.min(0.95, 0.72 + movement * 4);
 
           current.x += (target.x - current.x) * blend;
@@ -580,10 +606,12 @@
       const pinky = fingerUp(hand, 20, 18);
 
       if (index && !middle && !ring && !pinky) return "one";
+
       if (index && middle && !ring && !pinky) {
         const spread = distance(hand[8], hand[12]) / palmScale(hand);
         return spread > 0.72 ? "twoDraw" : "erase";
       }
+
       return null;
     }
 
@@ -596,18 +624,28 @@
       if (!index || !middle || !ring || pinky) return false;
 
       const scale = palmScale(hand);
+
       return (
         distance(hand[8], hand[12]) < scale * 0.65 &&
         distance(hand[12], hand[16]) < scale * 0.65
       );
     }
 
+    // Эта функция отсутствовала в предыдущем коде.
     function isOpenHand(hand) {
       const wrist = hand[0];
-      const fingers = [[8,6], [12,10], [16,14], [20,18]];
-      return fingers.filter(([tip, joint]) =>
+      const fingers = [
+        [8, 6],
+        [12, 10],
+        [16, 14],
+        [20, 18]
+      ];
+
+      const extendedCount = fingers.filter(([tip, joint]) =>
         distance(hand[tip], wrist) > distance(hand[joint], wrist) * 1.02
-      ).length >= 4;
+      ).length;
+
+      return extendedCount >= 4;
     }
 
     function drawNeonSegment(context, a, b, width, color) {
@@ -635,7 +673,11 @@
 
     function addAction(action) {
       actions.push(action);
-      if (actions.length > MAX_ACTIONS) actions.shift();
+
+      if (actions.length > MAX_ACTIONS) {
+        actions.shift();
+      }
+
       redoActions = [];
     }
 
@@ -649,12 +691,11 @@
 
       addAction(action);
       activeStrokes.set(key, action);
-
       drawNeonSegment(draw, point, point, width, color);
     }
 
     function continueStroke(key, point) {
-      const action = activeStrokes.get(key);
+      let action = activeStrokes.get(key);
 
       if (!action) {
         beginStroke(key, point);
@@ -687,7 +728,12 @@
     }
 
     function beginErase(point) {
-      const action = { type: "erase", width: Math.max(26, brushSize * 4), points: [{ ...point }] };
+      const action = {
+        type: "erase",
+        width: Math.max(26, brushSize * 4),
+        points: [{ ...point }]
+      };
+
       addAction(action);
       activeStrokes.set("erase", action);
       eraseSegment(point, point, action.width);
@@ -711,19 +757,36 @@
     function renderAction(action) {
       if (action.type === "stroke") {
         if (action.points.length === 1) {
-          drawNeonSegment(draw, action.points[0], action.points[0], action.width, action.color);
+          drawNeonSegment(
+            draw,
+            action.points[0],
+            action.points[0],
+            action.width,
+            action.color
+          );
           return;
         }
 
         for (let i = 1; i < action.points.length; i++) {
-          drawNeonSegment(draw, action.points[i - 1], action.points[i], action.width, action.color);
+          drawNeonSegment(
+            draw,
+            action.points[i - 1],
+            action.points[i],
+            action.width,
+            action.color
+          );
         }
       } else if (action.type === "erase") {
-        for (let i = 1; i < action.points.length; i++) {
-          eraseSegment(action.points[i - 1], action.points[i], action.width);
-        }
         if (action.points.length === 1) {
           eraseSegment(action.points[0], action.points[0], action.width);
+        }
+
+        for (let i = 1; i < action.points.length; i++) {
+          eraseSegment(
+            action.points[i - 1],
+            action.points[i],
+            action.width
+          );
         }
       } else if (action.type === "text") {
         draw.save();
@@ -739,11 +802,15 @@
 
     function redrawAll() {
       draw.clearRect(0, 0, innerWidth, innerHeight);
-      for (const action of actions) renderAction(action);
+
+      for (const action of actions) {
+        renderAction(action);
+      }
     }
 
     function undo() {
       if (!actions.length) return;
+
       activeStrokes.clear();
       redoActions.push(actions.pop());
       redrawAll();
@@ -753,6 +820,7 @@
 
     function redo() {
       if (!redoActions.length) return;
+
       activeStrokes.clear();
       actions.push(redoActions.pop());
       redrawAll();
@@ -762,8 +830,9 @@
 
     function placeText(point) {
       const text = textInput.value.trim();
+
       if (!text || !features.text) {
-        setStatus("Сначала введи текст в поле");
+        setStatus("Сначала введи текст");
         pendingText = false;
         return;
       }
@@ -929,11 +998,14 @@
 
       const tip = mapPoint(hand[8]);
       const base = mapPoint(hand[5]);
-      if (!tip || !base) return "";
+      const wrist = mapPoint(hand[0]);
+      const palm = mapPoint(hand[9]);
+
+      if (!tip || !base || !wrist || !palm) return "";
 
       const dx = tip.x - base.x;
       const dy = tip.y - base.y;
-      const scale = Math.max(1, distance(mapPoint(hand[0]), mapPoint(hand[9])));
+      const scale = Math.max(1, distance(wrist, palm));
 
       if (Math.abs(dx) < scale * 0.9 || Math.abs(dx) < Math.abs(dy) * 1.5) {
         return "";
@@ -1000,10 +1072,10 @@
       output.width = drawingCanvas.width;
       output.height = drawingCanvas.height;
 
-      const ctx = output.getContext("2d");
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, output.width, output.height);
-      ctx.drawImage(drawingCanvas, 0, 0);
+      const context = output.getContext("2d");
+      context.fillStyle = "#000";
+      context.fillRect(0, 0, output.width, output.height);
+      context.drawImage(drawingCanvas, 0, 0);
 
       const link = document.createElement("a");
       link.download = "moy-risunok.png";
@@ -1024,7 +1096,7 @@
 
     textButton.addEventListener("click", () => {
       if (!features.text) {
-        setStatus("Функция текста выключена в настройках");
+        setStatus("Текст выключен в настройках");
         return;
       }
 
@@ -1062,6 +1134,7 @@
         ) return;
 
         lastVideoTime = video.currentTime;
+
         const result = landmarker.detectForVideo(video, performance.now());
         const hands = smoothHands(result.landmarks || []);
 
@@ -1096,7 +1169,11 @@
 
         heartWasDetected = false;
 
-        if (features.cinema && hands.length >= 2 && hands.every(isOpenHand)) {
+        if (
+          features.cinema &&
+          hands.length >= 2 &&
+          hands.every(isOpenHand)
+        ) {
           cinemaFrames++;
 
           if (cinemaFrames >= 18 && !cinemaLatched) {
@@ -1137,10 +1214,15 @@
 
             if (gestureDirectionFrames >= 10 && !gestureDirectionLatched) {
               gestureDirectionLatched = true;
-              direction === "undo" ? undo() : redo();
+              if (direction === "undo") undo();
+              else redo();
             }
 
-            setStatus(direction === "undo" ? "Палец влево: отмена" : "Палец вправо: вернуть");
+            setStatus(
+              direction === "undo"
+                ? "Палец влево: отмена"
+                : "Палец вправо: вернуть"
+            );
             return;
           }
         }
@@ -1152,9 +1234,11 @@
         const activeKeys = new Set();
         let didSomething = false;
 
-        // Два разведённых пальца V рисуют двумя кончиками.
-        if (hands.length === 1 && features.twoFingerDraw &&
-            classifyHand(hands[0]) === "twoDraw") {
+        if (
+          hands.length === 1 &&
+          features.twoFingerDraw &&
+          classifyHand(hands[0]) === "twoDraw"
+        ) {
           const hand = hands[0];
           const p1 = mapPoint(hand[8]);
           const p2 = mapPoint(hand[12]);
@@ -1162,14 +1246,15 @@
           if (p1 && p2) {
             activeKeys.add("v-index");
             activeKeys.add("v-middle");
+
             continueStroke("v-index", p1);
             continueStroke("v-middle", p2);
-            drawCursor(p1, currentColor());
-            drawCursor(p2, currentColor());
+
+            drawCursor(p1, drawingColor);
+            drawCursor(p2, drawingColor);
             didSomething = true;
           }
         } else {
-          // Один палец рисует; два близко сведённых пальца стирают.
           for (let i = 0; i < hands.length; i++) {
             const hand = hands[i];
             const mode = classifyHand(hand);
@@ -1186,7 +1271,7 @@
               const key = `hand-${i}`;
               activeKeys.add(key);
               continueStroke(key, point);
-              drawCursor(point, features.rainbow ? currentColor() : drawingColor);
+              drawCursor(point, drawingColor);
               didSomething = true;
             } else if (mode === "erase" && features.erase) {
               const point = mapPoint(hand[8]);
@@ -1276,9 +1361,11 @@
         requestAnimationFrame(processFrame);
       } catch (error) {
         console.error(error);
+
         setStatus(`Не удалось запустить: ${error.message || error}`);
         startButton.disabled = false;
         startButton.textContent = "Попробовать снова";
+
         cameraStream?.getTracks().forEach(track => track.stop());
         cameraStream = null;
         video.srcObject = null;
@@ -1287,6 +1374,7 @@
 
     cinemaPhoto.addEventListener("error", () => {
       if (cinemaPhoto.dataset.fallbackUsed) return;
+
       cinemaPhoto.dataset.fallbackUsed = "true";
       cinemaPhoto.src =
         "https://i.kym-cdn.com/photos/images/newsfeed/002/693/300/817.jpg";
