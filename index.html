@@ -37,29 +37,18 @@
       pointer-events: none;
     }
 
-    #drawingCanvas {
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    #textCanvas {
-      z-index: 3;
-      pointer-events: none;
-    }
-
-    #overlayCanvas {
-      z-index: 4;
-      pointer-events: none;
-    }
+    #drawingCanvas { z-index: 2; pointer-events: none; }
+    #textCanvas { z-index: 3; pointer-events: none; }
+    #overlayCanvas { z-index: 4; pointer-events: none; }
 
     button, input, select {
-      touch-action: manipulation;
       font: inherit;
+      touch-action: manipulation;
     }
 
     button {
       min-height: 40px;
-      padding: 0 11px;
+      padding: 0 10px;
       border: 1px solid #087fa8;
       border-radius: 10px;
       background: #03131b;
@@ -67,59 +56,61 @@
       cursor: pointer;
     }
 
-    button:active { transform: scale(.98); }
-    button:disabled { opacity: .55; cursor: default; }
+    button:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
 
     #startButton {
       position: fixed;
-      z-index: 10;
+      z-index: 9999;
       top: 50%;
       left: 50%;
+      display: block;
+      min-height: 54px;
+      padding: 0 22px;
       transform: translate(-50%, -50%);
-      min-height: 52px;
-      padding: 0 20px;
       border-radius: 14px;
       background: #03131b;
-      box-shadow: 0 0 22px rgb(0 190 255 / 35%);
+      box-shadow: 0 0 22px rgb(0 190 255 / 40%);
       font-size: 16px;
+      pointer-events: auto;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
 
     #mainBar {
       position: fixed;
-      z-index: 8;
+      z-index: 10;
       left: 50%;
       bottom: max(10px, env(safe-area-inset-bottom));
-      transform: translateX(-50%);
       display: flex;
-      align-items: center;
-      justify-content: center;
       gap: 8px;
       width: min(480px, calc(100% - 20px));
       padding: 8px;
+      transform: translateX(-50%);
       border: 1px solid #164d68;
       border-radius: 14px;
-      background: rgb(0 0 0 / 89%);
+      background: rgb(0 0 0 / 90%);
       box-shadow: 0 0 18px rgb(0 180 255 / 22%);
-      backdrop-filter: blur(8px);
     }
 
     #mainBar button {
       flex: 1;
       min-height: 44px;
-      font-size: 13px;
     }
 
     #status {
       position: fixed;
-      z-index: 7;
-      bottom: calc(max(10px, env(safe-area-inset-bottom)) + 64px);
+      z-index: 11;
+      bottom: calc(max(10px, env(safe-area-inset-bottom)) + 65px);
       left: 50%;
-      transform: translateX(-50%);
       max-width: calc(100% - 24px);
       padding: 7px 11px;
+      transform: translateX(-50%);
       border: 1px solid rgb(0 190 255 / 35%);
       border-radius: 10px;
-      background: rgb(0 0 0 / 78%);
+      background: rgb(0 0 0 / 82%);
       color: #d8f8ff;
       font-size: 11px;
       text-align: center;
@@ -128,21 +119,19 @@
 
     #hintToast {
       position: fixed;
-      z-index: 9;
+      z-index: 12;
       top: max(12px, env(safe-area-inset-top));
       left: 50%;
       display: none;
       max-width: calc(100% - 24px);
-      transform: translateX(-50%);
       padding: 9px 14px;
+      transform: translateX(-50%);
       border: 1px solid #38d9ff;
       border-radius: 12px;
       background: rgb(0 0 0 / 88%);
       color: #e9fbff;
       font-size: 14px;
-      line-height: 1.35;
       text-align: center;
-      box-shadow: 0 0 16px rgb(0 190 255 / 30%);
       pointer-events: none;
     }
 
@@ -150,13 +139,13 @@
 
     #modal {
       position: fixed;
-      z-index: 30;
+      z-index: 100;
       inset: 0;
       display: none;
       place-items: center;
       overflow-y: auto;
       padding: 14px;
-      background: rgb(0 0 0 / 78%);
+      background: rgb(0 0 0 / 80%);
       backdrop-filter: blur(5px);
     }
 
@@ -176,70 +165,55 @@
 
     .panel.active { display: block; }
 
-    .panel h2 {
-      margin: 0 0 12px;
-      color: #9ceeff;
-      font-size: 20px;
-    }
+    .panel h2, .panel h3 { color: #9ceeff; }
+    .panel h2 { margin: 0 0 12px; font-size: 20px; }
+    .panel h3 { margin: 15px 0 8px; font-size: 14px; }
 
-    .panel h3 {
-      margin: 15px 0 8px;
-      color: #9ceeff;
-      font-size: 14px;
-    }
-
-    .panel-note {
-      margin: 0 0 10px;
-      color: #b8dbe3;
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    .gesture-list {
-      margin: 8px 0;
-      padding: 10px 12px;
-      border-radius: 11px;
-      background: #0b1c24;
+    .gesture-list, .note {
       color: #d8f8ff;
       font-size: 12px;
       line-height: 1.6;
     }
 
-    .grid-buttons {
+    .gesture-list {
+      padding: 10px 12px;
+      border-radius: 11px;
+      background: #0b1c24;
+    }
+
+    .note { color: #a9c3ca; }
+
+    .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
     }
 
-    .grid-buttons button.selected {
+    .grid button.selected {
       border-color: #70ffac;
       background: #123722;
       color: #d6ffe5;
-      box-shadow: 0 0 10px rgb(50 255 130 / 22%);
     }
 
-    .control-row {
+    .row {
       display: grid;
       grid-template-columns: 1fr auto;
       align-items: center;
-      gap: 10px;
+      gap: 9px;
       margin: 10px 0;
       color: #d8f8ff;
       font-size: 12px;
     }
 
-    .control-row input[type="range"] {
+    .row input[type="range"] {
       grid-column: 1 / -1;
       width: 100%;
       accent-color: #00cfff;
     }
 
-    .control-row output {
-      color: #9ceeff;
-      white-space: nowrap;
-    }
+    .row output { color: #9ceeff; }
 
-    .control-row input[type="color"] {
+    .row input[type="color"] {
       width: 48px;
       height: 38px;
       padding: 3px;
@@ -248,17 +222,7 @@
       background: #03131b;
     }
 
-    .select-row {
-      display: grid;
-      grid-template-columns: 1fr minmax(130px, 45%);
-      align-items: center;
-      gap: 10px;
-      margin: 10px 0;
-      color: #d8f8ff;
-      font-size: 12px;
-    }
-
-    select {
+    .row select {
       min-height: 38px;
       padding: 0 8px;
       border: 1px solid #087fa8;
@@ -267,10 +231,7 @@
       color: #80eaff;
     }
 
-    .toggle-list {
-      display: grid;
-      gap: 7px;
-    }
+    .toggle-list { display: grid; gap: 7px; }
 
     .toggle-row {
       display: flex;
@@ -304,7 +265,7 @@
       height: 18px;
       border-radius: 50%;
       background: #777;
-      transition: transform .15s ease, background .15s ease;
+      transition: transform .15s ease;
     }
 
     .switch.on {
@@ -317,21 +278,19 @@
       background: #c9ffd9;
     }
 
-    .ready-button {
+    .wide {
       width: 100%;
-      min-height: 46px;
-      margin-top: 13px;
-      font-size: 14px;
+      margin-top: 10px;
     }
 
-    .danger-button {
+    .danger {
       border-color: #a83e68;
       color: #ffafd0;
     }
 
     #cinemaMeme {
       position: fixed;
-      z-index: 20;
+      z-index: 50;
       inset: 0;
       display: none;
       place-items: center;
@@ -340,10 +299,7 @@
       pointer-events: none;
     }
 
-    #cinemaMeme.visible {
-      display: grid;
-      animation: fade-in .2s ease-out;
-    }
+    #cinemaMeme.visible { display: grid; }
 
     .meme-card {
       position: relative;
@@ -351,7 +307,6 @@
       max-height: 82dvh;
       overflow: hidden;
       background: #111;
-      box-shadow: 0 0 35px rgb(255 255 255 / 20%);
     }
 
     .meme-card img {
@@ -375,11 +330,6 @@
       text-shadow: 0 2px 5px #000, 0 0 14px #000;
     }
 
-    @keyframes fade-in {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
     @media (max-width: 480px) {
       .panel { padding: 13px; }
       #mainBar button { font-size: 12px; }
@@ -396,10 +346,8 @@
   <canvas id="overlayCanvas"></canvas>
 
   <button id="startButton" type="button">Включить камеру</button>
-
   <div id="hintToast" aria-live="polite"></div>
-
-  <div id="status">Сначала включи камеру</div>
+  <div id="status">Нажми «Включить камеру»</div>
 
   <div id="mainBar">
     <button id="settingsButton" type="button">⚙ Настройки</button>
@@ -413,169 +361,139 @@
     </div>
   </div>
 
-  <section id="modal" aria-label="Панель управления">
-    <section id="settingsPanel" class="panel" aria-label="Настройки">
+  <section id="modal">
+    <section id="settingsPanel" class="panel">
       <h2>Настройки</h2>
 
       <h3>Жесты</h3>
       <div class="gesture-list">
         ☝️ Один указательный палец вверх — рисовать.<br>
         ✌️ Указательный и средний близко — стирать.<br>
-        🖖 Указательный и средний разведены буквой V — рисовать двумя пальцами.<br>
+        🖖 Указательный и средний разведены V — рисовать двумя пальцами.<br>
         ⬅️ Указательный горизонтально влево — отменить действие.<br>
-        ➡️ Указательный горизонтально вправо — вернуть отменённое действие.<br>
+        ➡️ Указательный горизонтально вправо — вернуть отменённое.<br>
         ❤️ Две руки — нарисовать сердце.<br>
         🙌 Две раскрытые ладони — показать Absolute Cinema.<br>
         🤟 Три поднятых пальца — открыть настройки.
       </div>
 
-      <h3>Чувствительность жестов</h3>
-      <div class="control-row">
-        <label for="sensitivityPicker">Чувствительность распознавания</label>
+      <h3>Чувствительность</h3>
+      <div class="row">
+        <label for="sensitivityPicker">Распознавание жестов</label>
         <output id="sensitivityValue">5</output>
         <input id="sensitivityPicker" type="range" min="1" max="10" value="5">
       </div>
 
       <h3>Функции</h3>
       <div class="toggle-list">
-        <div class="toggle-row"><span>Рисование одним пальцем</span><button class="switch on" data-feature="draw" aria-label="Переключить рисование"></button></div>
-        <div class="toggle-row"><span>Стирание двумя пальцами</span><button class="switch on" data-feature="erase" aria-label="Переключить стирание"></button></div>
-        <div class="toggle-row"><span>Рисование двумя пальцами V</span><button class="switch on" data-feature="twoFingerDraw" aria-label="Переключить рисование двумя пальцами"></button></div>
-        <div class="toggle-row"><span>Сердце двумя руками</span><button class="switch on" data-feature="heart" aria-label="Переключить сердце"></button></div>
-        <div class="toggle-row"><span>Absolute Cinema</span><button class="switch on" data-feature="cinema" aria-label="Переключить мем"></button></div>
-        <div class="toggle-row"><span>Текст на рисунке</span><button class="switch on" data-feature="text" aria-label="Переключить текст"></button></div>
-        <div class="toggle-row"><span>Отмена и возврат жестом</span><button class="switch on" data-feature="undoRedo" aria-label="Переключить отмену и возврат"></button></div>
-        <div class="toggle-row"><span>Открытие меню тремя пальцами</span><button class="switch on" data-feature="menuGesture" aria-label="Переключить жест меню"></button></div>
-        <div class="toggle-row"><span>Звуки, включая звук рисования</span><button class="switch on" data-feature="sounds" aria-label="Переключить звуки"></button></div>
+        <div class="toggle-row"><span>Рисование одним пальцем</span><button class="switch on" data-feature="draw"></button></div>
+        <div class="toggle-row"><span>Стирание</span><button class="switch on" data-feature="erase"></button></div>
+        <div class="toggle-row"><span>Рисование двумя пальцами V</span><button class="switch on" data-feature="twoFingerDraw"></button></div>
+        <div class="toggle-row"><span>Сердце</span><button class="switch on" data-feature="heart"></button></div>
+        <div class="toggle-row"><span>Absolute Cinema</span><button class="switch on" data-feature="cinema"></button></div>
+        <div class="toggle-row"><span>Текст</span><button class="switch on" data-feature="text"></button></div>
+        <div class="toggle-row"><span>Отмена/возврат жестом</span><button class="switch on" data-feature="undoRedo"></button></div>
+        <div class="toggle-row"><span>Настройки тремя пальцами</span><button class="switch on" data-feature="menuGesture"></button></div>
+        <div class="toggle-row"><span>Звуки</span><button class="switch on" data-feature="sounds"></button></div>
       </div>
 
       <h3>Действия</h3>
-      <div class="grid-buttons">
+      <div class="grid">
         <button id="undoButton" type="button">↶ Отменить</button>
         <button id="redoButton" type="button">↷ Вернуть</button>
-        <button id="clearAllButton" class="danger-button" type="button">Очистить всё</button>
+        <button id="clearAllButton" class="danger" type="button">Очистить всё</button>
         <button id="saveButton" type="button">Сохранить PNG</button>
       </div>
 
-      <button class="ready-button" type="button" data-close>Готово</button>
+      <button class="wide" type="button" data-close>Готово</button>
     </section>
 
-    <section id="toolsPanel" class="panel" aria-label="Кисти и слои">
+    <section id="toolsPanel" class="panel">
       <h2>Кисти и слои</h2>
 
       <h3>Тип кисти</h3>
-      <div class="grid-buttons">
+      <div class="grid">
         <button class="brush-choice selected" data-brush="neon" type="button">Неон</button>
         <button class="brush-choice" data-brush="marker" type="button">Маркер</button>
         <button class="brush-choice" data-brush="soft" type="button">Мягкая</button>
         <button class="brush-choice" data-brush="dashed" type="button">Пунктир</button>
       </div>
 
-      <div class="control-row">
+      <div class="row">
         <label for="brushSizePicker">Размер кисти</label>
         <output id="brushSizeValue">7 px</output>
         <input id="brushSizePicker" type="range" min="2" max="30" value="7">
       </div>
 
-      <div class="control-row">
+      <div class="row">
         <label for="eraserSizePicker">Размер ластика</label>
         <output id="eraserSizeValue">36 px</output>
         <input id="eraserSizePicker" type="range" min="12" max="100" value="36">
       </div>
 
-      <div class="control-row">
+      <div class="row">
         <label for="colorPicker">Цвет кисти</label>
         <input id="colorPicker" type="color" value="#00cfff">
       </div>
 
-      <div class="grid-buttons">
-        <button id="rainbowButton" type="button">🌈 Радужная кисть: выкл.</button>
+      <div class="grid">
+        <button id="rainbowButton" type="button">🌈 Радужная: выкл.</button>
         <button id="symmetryButton" type="button">Зеркало: выкл.</button>
       </div>
 
       <h3>Фон</h3>
-      <div class="control-row">
+      <div class="row">
         <label for="backgroundColorPicker">Цвет фона</label>
         <input id="backgroundColorPicker" type="color" value="#111827">
       </div>
-      <button id="cameraBackgroundButton" type="button" style="width:100%">
-        Показать камеру вместо цветного фона
-      </button>
+      <button id="cameraBackgroundButton" class="wide" type="button">Вернуть фон камеры</button>
 
       <h3>Слои</h3>
-      <p class="panel-note">
-        Выбери слой, на котором рисовать. Скрытые слои не отображаются и не попадут в PNG.
-      </p>
+      <p class="note">Выбери слой для рисования. Скрытый слой не попадёт в изображение.</p>
 
-      <label class="select-row">
-        <span>Активный слой для рисования и стирания</span>
+      <label class="row">
+        <span>Активный слой</span>
         <select id="activeLayerPicker">
           <option value="drawing">Рисунок</option>
-          <option value="text">Текст и верхний слой</option>
+          <option value="text">Текст</option>
         </select>
       </label>
 
       <div class="toggle-list">
-        <div class="toggle-row">
-          <span>Показывать слой «Рисунок»</span>
-          <button class="switch on" data-layer-visible="drawing" aria-label="Показать или скрыть слой рисунка"></button>
-        </div>
-        <div class="toggle-row">
-          <span>Показывать слой «Текст»</span>
-          <button class="switch on" data-layer-visible="text" aria-label="Показать или скрыть слой текста"></button>
-        </div>
-        <div class="toggle-row">
-          <span>Показывать фон</span>
-          <button class="switch on" data-layer-visible="background" aria-label="Показать или скрыть фон"></button>
-        </div>
+        <div class="toggle-row"><span>Показывать рисунок</span><button class="switch on" data-layer="drawing"></button></div>
+        <div class="toggle-row"><span>Показывать текст</span><button class="switch on" data-layer="text"></button></div>
+        <div class="toggle-row"><span>Показывать фон</span><button class="switch on" data-layer="background"></button></div>
       </div>
 
-      <button id="clearLayerButton" class="danger-button" type="button" style="width:100%;margin-top:10px">
-        Очистить активный слой
-      </button>
-
-      <button class="ready-button" type="button" data-close>Готово</button>
+      <input id="textInput" type="text" maxlength="40" placeholder="Введи текст" style="width:100%;min-height:40px;margin-top:10px;padding:0 9px;border:1px solid #087fa8;border-radius:9px;background:#03131b;color:white">
+      <button id="placeTextButton" class="wide" type="button">Поставить текст пальцем</button>
+      <button id="clearLayerButton" class="wide danger" type="button">Очистить активный слой</button>
+      <button class="wide" type="button" data-close>Готово</button>
     </section>
   </section>
 
   <script type="module">
-    import {
-      FilesetResolver,
-      HandLandmarker
-    } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs";
+    // Здесь нет статического импорта MediaPipe: кнопка запуска остаётся рабочей,
+    // даже если CDN недоступен. Библиотека загружается после нажатия.
+    const $ = id => document.getElementById(id);
 
-    const video = document.getElementById("camera");
-    const backgroundLayer = document.getElementById("backgroundLayer");
-    const drawingCanvas = document.getElementById("drawingCanvas");
-    const textCanvas = document.getElementById("textCanvas");
-    const overlayCanvas = document.getElementById("overlayCanvas");
+    const video = $("camera");
+    const backgroundLayer = $("backgroundLayer");
+    const drawingCanvas = $("drawingCanvas");
+    const textCanvas = $("textCanvas");
+    const overlayCanvas = $("overlayCanvas");
 
     const drawingContext = drawingCanvas.getContext("2d");
     const textContext = textCanvas.getContext("2d");
     const overlay = overlayCanvas.getContext("2d");
 
-    const status = document.getElementById("status");
-    const hintToast = document.getElementById("hintToast");
-    const startButton = document.getElementById("startButton");
-    const modal = document.getElementById("modal");
-    const settingsPanel = document.getElementById("settingsPanel");
-    const toolsPanel = document.getElementById("toolsPanel");
-    const cinemaMeme = document.getElementById("cinemaMeme");
-    const cinemaPhoto = document.getElementById("cinemaPhoto");
-
-    const colorPicker = document.getElementById("colorPicker");
-    const backgroundColorPicker = document.getElementById("backgroundColorPicker");
-    const brushSizePicker = document.getElementById("brushSizePicker");
-    const eraserSizePicker = document.getElementById("eraserSizePicker");
-    const sensitivityPicker = document.getElementById("sensitivityPicker");
-    const activeLayerPicker = document.getElementById("activeLayerPicker");
-
-    const brushSizeValue = document.getElementById("brushSizeValue");
-    const eraserSizeValue = document.getElementById("eraserSizeValue");
-    const sensitivityValue = document.getElementById("sensitivityValue");
-
-    const rainbowButton = document.getElementById("rainbowButton");
-    const symmetryButton = document.getElementById("symmetryButton");
+    const startButton = $("startButton");
+    const status = $("status");
+    const hintToast = $("hintToast");
+    const modal = $("modal");
+    const settingsPanel = $("settingsPanel");
+    const toolsPanel = $("toolsPanel");
+    const cinemaMeme = $("cinemaMeme");
 
     const CONNECTIONS = [
       [0,1], [1,2], [2,3], [3,4],
@@ -608,28 +526,30 @@
     let landmarker = null;
     let cameraStream = null;
     let running = false;
+    let starting = false;
     let lastVideoTime = -1;
     let smoothedHands = [];
 
-    let drawingColor = colorPicker.value;
-    let selectedBackgroundColor = null;
-    let brushSize = Number(brushSizePicker.value);
-    let eraserSize = Number(eraserSizePicker.value);
-    let sensitivity = Number(sensitivityPicker.value);
+    let drawingColor = "#00cfff";
+    let backgroundColor = null;
+    let brushSize = 7;
+    let eraserSize = 36;
+    let sensitivity = 5;
     let rainbowHue = 0;
     let selectedBrush = "neon";
-    let symmetryEnabled = false;
+    let symmetry = false;
     let activeLayer = "drawing";
+    let pendingText = false;
 
     let actions = [];
     let redoActions = [];
     let activeStrokes = new Map();
-    let pendingText = false;
 
     let menuFrames = 0;
     let menuLatched = false;
     let cinemaFrames = 0;
     let cinemaLatched = false;
+    let heartLatched = false;
     let cinemaTimer = null;
 
     let gestureDirection = "";
@@ -638,35 +558,27 @@
     let gestureLatched = false;
 
     let audioContext = null;
-    let lastDrawingSoundTime = 0;
-    let lastHintMessage = "";
+    let lastSoundTime = 0;
     let hintTimer = null;
-    let heartWasDetected = false;
 
     const MAX_ACTIONS = 80;
-    const DRAW_SOUND_INTERVAL = 180;
-    const GESTURE_HOLD_MS = 450;
-    const GESTURE_LOST_GRACE_MS = 180;
 
     function setStatus(message) {
       status.textContent = message;
     }
 
     function showHint(message) {
-      if (lastHintMessage === message && hintToast.classList.contains("visible")) return;
-
-      lastHintMessage = message;
       hintToast.textContent = message;
       hintToast.classList.add("visible");
       clearTimeout(hintTimer);
-
-      hintTimer = setTimeout(() => {
-        hintToast.classList.remove("visible");
-        lastHintMessage = "";
-      }, 1250);
+      hintTimer = setTimeout(() => hintToast.classList.remove("visible"), 1200);
     }
 
-    function playSound(kind = "tap") {
+    function getContext(layer) {
+      return layer === "text" ? textContext : drawingContext;
+    }
+
+    function sound(kind = "tap") {
       if (!features.sounds) return;
 
       try {
@@ -676,58 +588,38 @@
         const oscillator = audioContext.createOscillator();
         const gain = audioContext.createGain();
         const now = audioContext.currentTime;
-
         const frequencies = {
-          tap: 520,
-          erase: 260,
-          undo: 390,
-          redo: 620,
-          heart: 740,
-          text: 580,
-          draw: 520
+          tap: 520, draw: 520, erase: 260,
+          undo: 390, redo: 620, heart: 740, text: 580
         };
 
         oscillator.type = "sine";
-        oscillator.frequency.setValueAtTime(frequencies[kind] || 500, now);
+        oscillator.frequency.value = frequencies[kind] || 500;
         gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(
-          kind === "draw" ? 0.035 : 0.07,
-          now + 0.015
-        );
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-
+        gain.gain.exponentialRampToValueAtTime(kind === "draw" ? 0.025 : 0.06, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
         oscillator.connect(gain);
         gain.connect(audioContext.destination);
         oscillator.start(now);
-        oscillator.stop(now + 0.13);
+        oscillator.stop(now + 0.12);
       } catch (error) {
         console.warn("Звук недоступен:", error);
       }
     }
 
-    function playDrawingSound() {
+    function drawSound() {
       const now = performance.now();
-      if (now - lastDrawingSoundTime < DRAW_SOUND_INTERVAL) return;
-      lastDrawingSoundTime = now;
-      playSound("draw");
+      if (now - lastSoundTime < 180) return;
+      lastSoundTime = now;
+      sound("draw");
     }
 
-    function currentColor() {
-      if (!features.rainbow) return drawingColor;
-      rainbowHue = (rainbowHue + 5) % 360;
-      return `hsl(${rainbowHue} 100% 58%)`;
-    }
-
-    function contextForLayer(layer) {
-      return layer === "text" ? textContext : drawingContext;
-    }
-
-    function updateLayerVisibility() {
+    function setLayerVisibility() {
       drawingCanvas.style.visibility = layerVisible.drawing ? "visible" : "hidden";
       textCanvas.style.visibility = layerVisible.text ? "visible" : "hidden";
       backgroundLayer.style.visibility = layerVisible.background ? "visible" : "hidden";
       video.style.visibility =
-        selectedBackgroundColor && layerVisible.background ? "hidden" : "visible";
+        backgroundColor && layerVisible.background ? "hidden" : "visible";
     }
 
     function resizeCanvases() {
@@ -749,16 +641,14 @@
     function mapPoint(point) {
       if (!video.videoWidth || !video.videoHeight) return null;
 
-      const width = innerWidth;
-      const height = innerHeight;
-      const scale = Math.max(width / video.videoWidth, height / video.videoHeight);
+      const scale = Math.max(innerWidth / video.videoWidth, innerHeight / video.videoHeight);
       const shownWidth = video.videoWidth * scale;
       const shownHeight = video.videoHeight * scale;
-      const cropX = (shownWidth - width) / 2;
-      const cropY = (shownHeight - height) / 2;
+      const cropX = (shownWidth - innerWidth) / 2;
+      const cropY = (shownHeight - innerHeight) / 2;
 
       return {
-        x: width - (point.x * shownWidth - cropX),
+        x: innerWidth - (point.x * shownWidth - cropX),
         y: point.y * shownHeight - cropY
       };
     }
@@ -782,9 +672,7 @@
         for (let i = 0; i < ordered[h].length; i++) {
           const target = ordered[h][i];
           const current = smoothedHands[h][i];
-          const movement = Math.hypot(target.x - current.x, target.y - current.y);
-          const blend = Math.min(0.95, 0.72 + movement * 4);
-
+          const blend = 0.72 + (sensitivity / 10) * 0.2;
           current.x += (target.x - current.x) * blend;
           current.y += (target.y - current.y) * blend;
           current.z += ((target.z || 0) - current.z) * blend;
@@ -794,21 +682,13 @@
       return smoothedHands;
     }
 
-    function sensitivityFactor() {
-      return 0.7 + ((sensitivity - 1) / 9) * 0.6;
-    }
-
-    function fingerUp(hand, tip, joint) {
-      const threshold = 0.015 / sensitivityFactor();
-      return hand[tip].y < hand[joint].y - threshold;
-    }
-
     function distance(a, b) {
       return Math.hypot(a.x - b.x, a.y - b.y);
     }
 
-    function palmScale(hand) {
-      return Math.max(0.0001, distance(hand[0], hand[9]));
+    function fingerUp(hand, tip, joint) {
+      const threshold = 0.02 - sensitivity * 0.0012;
+      return hand[tip].y < hand[joint].y - threshold;
     }
 
     function classifyHand(hand) {
@@ -817,45 +697,33 @@
       const ring = fingerUp(hand, 16, 14);
       const pinky = fingerUp(hand, 20, 18);
 
-      if (index && !middle && !ring && !pinky) return "one";
+      if (index && !middle && !ring && !pinky) return "draw";
 
       if (index && middle && !ring && !pinky) {
-        const spread = distance(hand[8], hand[12]) / palmScale(hand);
-        const threshold = 0.72 / sensitivityFactor();
-        return spread > threshold ? "twoDraw" : "erase";
+        const palm = Math.max(0.001, distance(hand[0], hand[9]));
+        const spread = distance(hand[8], hand[12]) / palm;
+        return spread > 0.72 ? "twoDraw" : "erase";
       }
 
-      return null;
+      return "";
     }
 
-    function hasMenuPose(hand) {
-      const index = fingerUp(hand, 8, 6);
-      const middle = fingerUp(hand, 12, 10);
-      const ring = fingerUp(hand, 16, 14);
-      const pinky = fingerUp(hand, 20, 18);
-
-      if (!index || !middle || !ring || pinky) return false;
-
-      const scale = palmScale(hand);
-      const closeThreshold = 0.65 * sensitivityFactor();
-
-      return (
-        distance(hand[8], hand[12]) < scale * closeThreshold &&
-        distance(hand[12], hand[16]) < scale * closeThreshold
-      );
+    function menuPose(hand) {
+      return fingerUp(hand, 8, 6) &&
+        fingerUp(hand, 12, 10) &&
+        fingerUp(hand, 16, 14) &&
+        !fingerUp(hand, 20, 18);
     }
 
-    function isOpenHand(hand) {
+    function openHand(hand) {
       const wrist = hand[0];
-      const fingers = [[8,6], [12,10], [16,14], [20,18]];
-      const factor = 1.02 / sensitivityFactor();
-
-      return fingers.filter(([tip, joint]) =>
-        distance(hand[tip], wrist) > distance(hand[joint], wrist) * factor
-      ).length >= 4;
+      return [[8,6], [12,10], [16,14], [20,18]]
+        .filter(([tip, joint]) =>
+          distance(hand[tip], wrist) > distance(hand[joint], wrist) * 1.02
+        ).length >= 4;
     }
 
-    function drawOneSegment(context, a, b, width, color, brush) {
+    function strokeOne(context, a, b, width, color, brush) {
       context.save();
       context.beginPath();
       context.moveTo(a.x, a.y);
@@ -865,36 +733,30 @@
       context.lineWidth = width;
 
       if (brush === "dashed") {
-        context.setLineDash([width * 2.2, width * 1.5]);
+        context.setLineDash([width * 2, width * 1.5]);
         context.strokeStyle = color;
-        context.shadowColor = color;
-        context.shadowBlur = 3;
         context.stroke();
       } else if (brush === "marker") {
-        context.globalAlpha = 0.78;
-        context.setLineDash([]);
+        context.globalAlpha = 0.72;
         context.strokeStyle = color;
-        context.shadowBlur = 0;
         context.stroke();
       } else if (brush === "soft") {
-        context.globalAlpha = 0.55;
-        context.setLineDash([]);
+        context.globalAlpha = 0.5;
         context.strokeStyle = color;
         context.shadowColor = color;
-        context.shadowBlur = Math.max(14, width * 3.5);
+        context.shadowBlur = width * 3;
         context.stroke();
       } else {
-        context.setLineDash([]);
         context.strokeStyle = color;
         context.shadowColor = color;
-        context.shadowBlur = Math.max(7, width * 2);
+        context.shadowBlur = width * 2;
         context.stroke();
 
         context.beginPath();
         context.moveTo(a.x, a.y);
         context.lineTo(b.x, b.y);
-        context.strokeStyle = "#efffff";
-        context.lineWidth = Math.max(1.4, width * 0.22);
+        context.lineWidth = Math.max(1.5, width * 0.22);
+        context.strokeStyle = "#fff";
         context.shadowBlur = 3;
         context.stroke();
       }
@@ -902,43 +764,91 @@
       context.restore();
     }
 
-    function drawSegment(context, a, b, width, color, brush, mirror) {
-      drawOneSegment(context, a, b, width, color, brush);
+    function drawLine(context, a, b, action) {
+      strokeOne(context, a, b, action.width, action.color, action.brush);
 
-      if (mirror) {
-        const mirroredA = { x: innerWidth - a.x, y: a.y };
-        const mirroredB = { x: innerWidth - b.x, y: b.y };
-
-        if (Math.abs(a.x - mirroredA.x) > 1) {
-          drawOneSegment(context, mirroredA, mirroredB, width, color, brush);
-        }
+      if (action.mirror) {
+        strokeOne(
+          context,
+          { x: innerWidth - a.x, y: a.y },
+          { x: innerWidth - b.x, y: b.y },
+          action.width,
+          action.color,
+          action.brush
+        );
       }
     }
 
-    function eraseOneSegment(context, a, b, width) {
-      context.save();
-      context.globalCompositeOperation = "destination-out";
-      context.setLineDash([]);
-      context.beginPath();
-      context.moveTo(a.x, a.y);
-      context.lineTo(b.x, b.y);
-      context.lineCap = "round";
-      context.lineWidth = width;
-      context.stroke();
-      context.restore();
+    function eraseLine(context, a, b, action) {
+      function eraseOne(from, to) {
+        context.save();
+        context.globalCompositeOperation = "destination-out";
+        context.beginPath();
+        context.moveTo(from.x, from.y);
+        context.lineTo(to.x, to.y);
+        context.lineCap = "round";
+        context.lineWidth = action.width;
+        context.stroke();
+        context.restore();
+      }
+
+      eraseOne(a, b);
+
+      if (action.mirror) {
+        eraseOne(
+          { x: innerWidth - a.x, y: a.y },
+          { x: innerWidth - b.x, y: b.y }
+        );
+      }
     }
 
-    function eraseSegment(context, a, b, width, mirror) {
-      eraseOneSegment(context, a, b, width);
+    function renderAction(action) {
+      const context = getContext(action.layer);
 
-      if (mirror) {
-        const mirroredA = { x: innerWidth - a.x, y: a.y };
-        const mirroredB = { x: innerWidth - b.x, y: b.y };
-
-        if (Math.abs(a.x - mirroredA.x) > 1) {
-          eraseOneSegment(context, mirroredA, mirroredB, width);
+      if (action.type === "stroke") {
+        if (action.points.length === 1) {
+          drawLine(context, action.points[0], action.points[0], action);
+        } else {
+          for (let i = 1; i < action.points.length; i++) {
+            drawLine(context, action.points[i - 1], action.points[i], action);
+          }
         }
       }
+
+      if (action.type === "erase") {
+        if (action.points.length === 1) {
+          eraseLine(context, action.points[0], action.points[0], action);
+        } else {
+          for (let i = 1; i < action.points.length; i++) {
+            eraseLine(context, action.points[i - 1], action.points[i], action);
+          }
+        }
+      }
+
+      if (action.type === "text") {
+        function putText(x) {
+          context.save();
+          context.font = `bold ${action.size}px Arial`;
+          context.textBaseline = "middle";
+          context.fillStyle = action.color;
+          context.shadowColor = action.color;
+          context.shadowBlur = 8;
+          context.fillText(action.text, x, action.y);
+          context.restore();
+        }
+
+        putText(action.x);
+        if (action.mirror) putText(innerWidth - action.x);
+      }
+    }
+
+    function redrawAll() {
+      if (!drawingContext || !textContext) return;
+
+      drawingContext.clearRect(0, 0, innerWidth, innerHeight);
+      textContext.clearRect(0, 0, innerWidth, innerHeight);
+
+      for (const action of actions) renderAction(action);
     }
 
     function addAction(action) {
@@ -947,31 +857,23 @@
       redoActions = [];
     }
 
-    function beginStroke(key, point, color = currentColor(), width = brushSize) {
+    function beginStroke(key, point) {
       const action = {
         type: "stroke",
         layer: activeLayer,
-        color,
-        width,
+        points: [{ ...point }],
+        width: brushSize,
+        color: features.rainbow
+          ? `hsl(${(rainbowHue += 7) % 360} 100% 58%)`
+          : drawingColor,
         brush: selectedBrush,
-        mirror: symmetryEnabled,
-        points: [{ ...point }]
+        mirror: symmetry
       };
 
       addAction(action);
       activeStrokes.set(key, action);
-
-      drawSegment(
-        contextForLayer(action.layer),
-        point,
-        point,
-        action.width,
-        action.color,
-        action.brush,
-        action.mirror
-      );
-
-      playDrawingSound();
+      drawLine(getContext(action.layer), point, point, action);
+      drawSound();
     }
 
     function continueStroke(key, point) {
@@ -982,42 +884,26 @@
         return;
       }
 
-      const last = action.points[action.points.length - 1];
-      if (distance(last, point) < 0.8) return;
+      const previous = action.points[action.points.length - 1];
+      if (distance(previous, point) < 0.8) return;
 
       action.points.push({ ...point });
-
-      drawSegment(
-        contextForLayer(action.layer),
-        last,
-        point,
-        action.width,
-        action.color,
-        action.brush,
-        action.mirror
-      );
-
-      playDrawingSound();
-    }
-
-    function finishStrokesExcept(keys) {
-      for (const key of [...activeStrokes.keys()]) {
-        if (!keys.has(key)) activeStrokes.delete(key);
-      }
+      drawLine(getContext(action.layer), previous, point, action);
+      drawSound();
     }
 
     function beginErase(point) {
       const action = {
         type: "erase",
         layer: activeLayer,
+        points: [{ ...point }],
         width: eraserSize,
-        mirror: symmetryEnabled,
-        points: [{ ...point }]
+        mirror: symmetry
       };
 
       addAction(action);
       activeStrokes.set("erase", action);
-      eraseSegment(contextForLayer(action.layer), point, point, action.width, action.mirror);
+      eraseLine(getContext(action.layer), point, point, action);
     }
 
     function continueErase(point) {
@@ -1028,93 +914,16 @@
         return;
       }
 
-      const last = action.points[action.points.length - 1];
-      if (distance(last, point) < 1) return;
+      const previous = action.points[action.points.length - 1];
+      if (distance(previous, point) < 1) return;
 
       action.points.push({ ...point });
-      eraseSegment(
-        contextForLayer(action.layer),
-        last,
-        point,
-        action.width,
-        action.mirror
-      );
+      eraseLine(getContext(action.layer), previous, point, action);
     }
 
-    function renderAction(action) {
-      const context = contextForLayer(action.layer || "drawing");
-
-      if (action.type === "stroke") {
-        if (action.points.length === 1) {
-          drawSegment(
-            context,
-            action.points[0],
-            action.points[0],
-            action.width,
-            action.color,
-            action.brush || "neon",
-            Boolean(action.mirror)
-          );
-          return;
-        }
-
-        for (let i = 1; i < action.points.length; i++) {
-          drawSegment(
-            context,
-            action.points[i - 1],
-            action.points[i],
-            action.width,
-            action.color,
-            action.brush || "neon",
-            Boolean(action.mirror)
-          );
-        }
-      } else if (action.type === "erase") {
-        if (action.points.length === 1) {
-          eraseSegment(
-            context,
-            action.points[0],
-            action.points[0],
-            action.width,
-            Boolean(action.mirror)
-          );
-        }
-
-        for (let i = 1; i < action.points.length; i++) {
-          eraseSegment(
-            context,
-            action.points[i - 1],
-            action.points[i],
-            action.width,
-            Boolean(action.mirror)
-          );
-        }
-      } else if (action.type === "text") {
-        function drawTextAt(x) {
-          context.save();
-          context.font = `bold ${action.size}px Arial`;
-          context.textBaseline = "middle";
-          context.shadowColor = action.color;
-          context.shadowBlur = 8;
-          context.fillStyle = action.color;
-          context.fillText(action.text, x, action.y);
-          context.restore();
-        }
-
-        drawTextAt(action.x);
-
-        if (action.mirror && Math.abs(action.x - innerWidth / 2) > 1) {
-          drawTextAt(innerWidth - action.x);
-        }
-      }
-    }
-
-    function redrawAll() {
-      drawingContext.clearRect(0, 0, innerWidth, innerHeight);
-      textContext.clearRect(0, 0, innerWidth, innerHeight);
-
-      for (const action of actions) {
-        renderAction(action);
+    function finishStrokesExcept(keys) {
+      for (const key of [...activeStrokes.keys()]) {
+        if (!keys.has(key)) activeStrokes.delete(key);
       }
     }
 
@@ -1129,9 +938,9 @@
 
       redoActions.push(actions.pop());
       redrawAll();
-      playSound("undo");
-      setStatus("Последнее действие отменено");
+      setStatus("Действие отменено");
       showHint("Отменено");
+      sound("undo");
     }
 
     function redo() {
@@ -1145,137 +954,28 @@
 
       actions.push(redoActions.pop());
       redrawAll();
-      playSound("redo");
       setStatus("Действие возвращено");
-      showHint("Действие возвращено");
+      showHint("Возвращено");
+      sound("redo");
     }
 
-    function clearLayer(layer) {
-      actions = actions.filter(action => action.layer !== layer);
-      redoActions = redoActions.filter(action => action.layer !== layer);
-      activeStrokes.clear();
-      redrawAll();
-      setStatus(`Слой «${layer === "text" ? "Текст" : "Рисунок"}» очищен`);
-      showHint("Активный слой очищен");
-    }
-
-    function placeText(point) {
-      const text = textInputValue();
-
-      if (!text || !features.text) {
-        setStatus("Введи текст в панели «Кисти и слои»");
-        pendingText = false;
-        return;
+    function drawEraserCursor(point) {
+      function circle(x) {
+        overlay.beginPath();
+        overlay.arc(x, point.y, eraserSize / 2, 0, Math.PI * 2);
+        overlay.fillStyle = "rgba(255, 53, 189, .18)";
+        overlay.fill();
+        overlay.lineWidth = 4;
+        overlay.strokeStyle = "#ff8bd8";
+        overlay.shadowColor = "#ff35bd";
+        overlay.shadowBlur = 15;
+        overlay.stroke();
       }
 
-      const action = {
-        type: "text",
-        layer: "text",
-        text,
-        x: point.x,
-        y: point.y,
-        size: Math.max(24, brushSize * 4),
-        color: currentColor(),
-        mirror: symmetryEnabled
-      };
-
-      addAction(action);
-      renderAction(action);
-      pendingText = false;
-      playSound("text");
-      setStatus("Текст добавлен");
-      showHint("Текст добавлен");
-    }
-
-    function textInputValue() {
-      return document.getElementById("textInput").value.trim();
-    }
-
-    function detectHeart(hands) {
-      if (hands.length < 2) return null;
-
-      const ordered = hands
-        .map(hand => ({ hand, wrist: mapPoint(hand[0]) }))
-        .filter(item => item.wrist)
-        .sort((a, b) => a.wrist.x - b.wrist.x);
-
-      if (ordered.length < 2) return null;
-
-      const left = ordered[0].hand;
-      const right = ordered[1].hand;
-      const li = mapPoint(left[8]);
-      const ri = mapPoint(right[8]);
-      const lt = mapPoint(left[4]);
-      const rt = mapPoint(right[4]);
-      const lw = mapPoint(left[0]);
-      const rw = mapPoint(right[0]);
-
-      if (!li || !ri || !lt || !rt || !lw || !rw) return null;
-
-      const wristDistance = distance(lw, rw);
-      const tolerance = sensitivityFactor();
-
-      const valid =
-        wristDistance > 60 &&
-        distance(li, ri) < wristDistance * 0.55 * tolerance &&
-        distance(lt, rt) < wristDistance * 0.55 * tolerance &&
-        (li.y + ri.y) / 2 < (lt.y + rt.y) / 2 + 20 * tolerance;
-
-      if (!valid) return null;
-
-      return {
-        x: (li.x + ri.x + lt.x + rt.x) / 4,
-        y: (li.y + ri.y + lt.y + rt.y) / 4,
-        size: Math.max(80, Math.min(250, wristDistance * 0.8))
-      };
-    }
-
-    function drawHeart(center) {
-      const points = [];
-      const size = center.size;
-
-      for (let t = 0; t <= Math.PI * 2; t += 0.06) {
-        const x = 16 * Math.sin(t) ** 3;
-        const y =
-          13 * Math.cos(t) -
-          5 * Math.cos(2 * t) -
-          2 * Math.cos(3 * t) -
-          Math.cos(4 * t);
-
-        points.push({
-          x: center.x + (x / 34) * size,
-          y: center.y - (y / 34) * size * 0.85
-        });
-      }
-
-      const action = {
-        type: "stroke",
-        layer: activeLayer,
-        color: currentColor(),
-        width: Math.max(4, brushSize),
-        brush: selectedBrush,
-        mirror: symmetryEnabled,
-        points
-      };
-
-      addAction(action);
-      renderAction(action);
-      playSound("heart");
-      showHint("Сердце нарисовано");
-    }
-
-    function showCinema() {
-      cinemaMeme.classList.add("visible");
-      cinemaMeme.setAttribute("aria-hidden", "false");
-      clearTimeout(cinemaTimer);
-
-      cinemaTimer = setTimeout(() => {
-        cinemaMeme.classList.remove("visible");
-        cinemaMeme.setAttribute("aria-hidden", "true");
-      }, 3000);
-
-      playSound("tap");
-      showHint("Absolute Cinema");
+      overlay.save();
+      circle(point.x);
+      if (symmetry) circle(innerWidth - point.x);
+      overlay.restore();
     }
 
     function drawSkeleton(hands) {
@@ -1290,81 +990,19 @@
           overlay.beginPath();
           overlay.moveTo(p1.x, p1.y);
           overlay.lineTo(p2.x, p2.y);
-          overlay.lineCap = "round";
-          overlay.lineJoin = "round";
-          overlay.strokeStyle = "rgba(0,205,255,.9)";
           overlay.lineWidth = 3;
-          overlay.shadowColor = "#00bfff";
+          overlay.lineCap = "round";
+          overlay.strokeStyle = "#00cfff";
+          overlay.shadowColor = "#00cfff";
           overlay.shadowBlur = 7;
           overlay.stroke();
-        }
-
-        for (const landmark of hand) {
-          const point = mapPoint(landmark);
-          if (!point) continue;
-
-          overlay.beginPath();
-          overlay.arc(point.x, point.y, 2.5, 0, Math.PI * 2);
-          overlay.fillStyle = "#eaffff";
-          overlay.shadowColor = "#00bfff";
-          overlay.shadowBlur = 7;
-          overlay.fill();
         }
       }
 
       overlay.shadowBlur = 0;
     }
 
-    function drawCursor(point, color = drawingColor) {
-      function drawOne(x, y) {
-        overlay.beginPath();
-        overlay.arc(x, y, Math.max(8, brushSize), 0, Math.PI * 2);
-        overlay.lineWidth = 2;
-        overlay.strokeStyle = color;
-        overlay.shadowColor = color;
-        overlay.shadowBlur = 12;
-        overlay.stroke();
-      }
-
-      overlay.save();
-      drawOne(point.x, point.y);
-
-      if (symmetryEnabled) {
-        drawOne(innerWidth - point.x, point.y);
-      }
-
-      overlay.restore();
-    }
-
-    function drawEraseCursor(point) {
-      const radius = eraserSize / 2;
-
-      function drawOne(x, y) {
-        overlay.beginPath();
-        overlay.arc(x, y, radius, 0, Math.PI * 2);
-        overlay.fillStyle = "rgba(255, 53, 189, 0.18)";
-        overlay.fill();
-
-        overlay.beginPath();
-        overlay.arc(x, y, radius, 0, Math.PI * 2);
-        overlay.lineWidth = 4;
-        overlay.strokeStyle = "#ff8bd8";
-        overlay.shadowColor = "#ff35bd";
-        overlay.shadowBlur = 16;
-        overlay.stroke();
-      }
-
-      overlay.save();
-      drawOne(point.x, point.y);
-
-      if (symmetryEnabled) {
-        drawOne(innerWidth - point.x, point.y);
-      }
-
-      overlay.restore();
-    }
-
-    function horizontalPointDirection(hand) {
+    function directionGesture(hand) {
       const tip = mapPoint(hand[8]);
       const base = mapPoint(hand[5]);
       const pip = mapPoint(hand[6]);
@@ -1373,47 +1011,40 @@
 
       if (!tip || !base || !pip || !wrist || !palm) return "";
 
-      const factor = sensitivityFactor();
-      const indexExtended =
-        distance(hand[8], hand[5]) >
-        distance(hand[6], hand[5]) * (1.28 / factor);
+      const factor = 0.75 + sensitivity * 0.05;
+      if (distance(hand[8], hand[5]) <= distance(hand[6], hand[5]) * (1.3 / factor)) {
+        return "";
+      }
 
-      if (!indexExtended) return "";
-
-      const curledCount = [
-        [12,10],
-        [16,14],
-        [20,18]
-      ].filter(([fingerTip, joint]) =>
-        distance(hand[fingerTip], hand[0]) <
+      const curled = [[12,10], [16,14], [20,18]].filter(([tipIndex, joint]) =>
+        distance(hand[tipIndex], hand[0]) <
         distance(hand[joint], hand[0]) * (1.45 / factor)
       ).length;
 
-      if (curledCount < 2) return "";
+      if (curled < 2) return "";
 
       const dx = tip.x - base.x;
       const dy = tip.y - base.y;
       const palmSize = Math.max(1, distance(wrist, palm));
 
       if (Math.abs(dx) < palmSize * (0.42 / factor)) return "";
-      if (Math.abs(dx) < Math.abs(dy) * (1.25 / factor)) return "";
+      if (Math.abs(dx) < Math.abs(dy) * 1.2) return "";
 
       return dx < 0 ? "undo" : "redo";
     }
 
-    function resetGestureTracking() {
+    function resetDirection() {
       gestureDirection = "";
       gestureStartedAt = 0;
       gestureLastSeenAt = 0;
       gestureLatched = false;
     }
 
-    function openPanel(panel) {
-      settingsPanel.classList.toggle("active", panel === "settings");
-      toolsPanel.classList.toggle("active", panel === "tools");
+    function openPanel(which) {
+      settingsPanel.classList.toggle("active", which === "settings");
+      toolsPanel.classList.toggle("active", which === "tools");
       modal.classList.add("open");
       activeStrokes.clear();
-      setStatus(panel === "settings" ? "Настройки открыты" : "Кисти и слои открыты");
     }
 
     function closePanel() {
@@ -1421,35 +1052,10 @@
       settingsPanel.classList.remove("active");
       toolsPanel.classList.remove("active");
       activeStrokes.clear();
-      setStatus("Панель закрыта");
     }
 
-    function applyBackground(color) {
-      selectedBackgroundColor = color;
-      backgroundLayer.style.background = color || "transparent";
-      updateLayerVisibility();
-    }
-
-    function updateLayerVisibility() {
-      drawingCanvas.style.visibility = layerVisible.drawing ? "visible" : "hidden";
-      textCanvas.style.visibility = layerVisible.text ? "visible" : "hidden";
-      backgroundLayer.style.visibility = layerVisible.background ? "visible" : "hidden";
-      video.style.visibility =
-        selectedBackgroundColor && layerVisible.background ? "hidden" : "visible";
-
-      document.querySelectorAll("[data-layer-visible]").forEach(button => {
-        const layer = button.dataset.layerVisible;
-        button.classList.toggle("on", layerVisible[layer]);
-      });
-    }
-
-    document.getElementById("settingsButton").addEventListener("click", () => {
-      openPanel("settings");
-    });
-
-    document.getElementById("toolsButton").addEventListener("click", () => {
-      openPanel("tools");
-    });
+    $("settingsButton").addEventListener("click", () => openPanel("settings"));
+    $("toolsButton").addEventListener("click", () => openPanel("tools"));
 
     document.querySelectorAll("[data-close]").forEach(button => {
       button.addEventListener("click", closePanel);
@@ -1459,132 +1065,153 @@
       if (event.target === modal) closePanel();
     });
 
-    document.querySelectorAll(".switch[data-feature]").forEach(button => {
+    document.querySelectorAll("[data-feature]").forEach(button => {
       button.addEventListener("click", () => {
         const feature = button.dataset.feature;
         features[feature] = !features[feature];
         button.classList.toggle("on", features[feature]);
-
-        if (feature === "rainbow") {
-          rainbowButton.textContent = features.rainbow
-            ? "🌈 Радужная кисть: вкл."
-            : "🌈 Радужная кисть: выкл.";
-        }
-
         showHint(features[feature] ? "Функция включена" : "Функция выключена");
-        playSound("tap");
-      });
-    });
-
-    document.querySelectorAll(".switch[data-layer-visible]").forEach(button => {
-      button.addEventListener("click", () => {
-        const layer = button.dataset.layerVisible;
-        layerVisible[layer] = !layerVisible[layer];
-        updateLayerVisibility();
-        showHint(layerVisible[layer] ? "Слой показан" : "Слой скрыт");
       });
     });
 
     document.querySelectorAll(".brush-choice").forEach(button => {
       button.addEventListener("click", () => {
         selectedBrush = button.dataset.brush;
-
-        document.querySelectorAll(".brush-choice").forEach(item => {
-          item.classList.toggle("selected", item === button);
-        });
-
-        const names = {
-          neon: "Неоновая кисть",
-          marker: "Маркер",
-          soft: "Мягкая кисть",
-          dashed: "Пунктирная кисть"
-        };
-
-        showHint(names[selectedBrush]);
-        playSound("tap");
+        document.querySelectorAll(".brush-choice").forEach(item =>
+          item.classList.toggle("selected", item === button)
+        );
+        showHint(`Кисть: ${button.textContent}`);
       });
     });
 
-    document.getElementById("sensitivityPicker").addEventListener("input", event => {
+    $("brushSizePicker").addEventListener("input", event => {
+      brushSize = Number(event.target.value);
+      $("brushSizeValue").textContent = `${brushSize} px`;
+    });
+
+    $("eraserSizePicker").addEventListener("input", event => {
+      eraserSize = Number(event.target.value);
+      $("eraserSizeValue").textContent = `${eraserSize} px`;
+    });
+
+    $("sensitivityPicker").addEventListener("input", event => {
       sensitivity = Number(event.target.value);
-      sensitivityValue.textContent = String(sensitivity);
+      $("sensitivityValue").textContent = String(sensitivity);
       showHint(`Чувствительность: ${sensitivity}`);
     });
 
-    brushSizePicker.addEventListener("input", () => {
-      brushSize = Number(brushSizePicker.value);
-      brushSizeValue.textContent = `${brushSize} px`;
+    $("colorPicker").addEventListener("input", event => {
+      drawingColor = event.target.value;
     });
 
-    eraserSizePicker.addEventListener("input", () => {
-      eraserSize = Number(eraserSizePicker.value);
-      eraserSizeValue.textContent = `${eraserSize} px`;
+    $("backgroundColorPicker").addEventListener("input", event => {
+      backgroundColor = event.target.value;
+      backgroundLayer.style.background = backgroundColor;
+      setLayerVisibility();
+      showHint("Фон изменён");
     });
 
-    colorPicker.addEventListener("input", () => {
-      drawingColor = colorPicker.value;
-      showHint("Цвет кисти изменён");
+    $("cameraBackgroundButton").addEventListener("click", () => {
+      backgroundColor = null;
+      backgroundLayer.style.background = "transparent";
+      setLayerVisibility();
+      showHint("Возвращён фон камеры");
     });
 
-    backgroundColorPicker.addEventListener("input", () => {
-      applyBackground(backgroundColorPicker.value);
-      showHint("Цвет фона изменён");
-    });
-
-    document.getElementById("cameraBackgroundButton").addEventListener("click", () => {
-      applyBackground(null);
-      showHint("Фон камеры восстановлен");
-    });
-
-    document.getElementById("activeLayerPicker").addEventListener("change", event => {
+    $("activeLayerPicker").addEventListener("change", event => {
       activeLayer = event.target.value;
-      showHint(activeLayer === "text" ? "Активен слой текста" : "Активен слой рисунка");
+      showHint(`Активный слой: ${activeLayer === "text" ? "текст" : "рисунок"}`);
     });
 
-    document.getElementById("rainbowButton").addEventListener("click", event => {
+    document.querySelectorAll("[data-layer]").forEach(button => {
+      button.addEventListener("click", () => {
+        const layer = button.dataset.layer;
+        layerVisible[layer] = !layerVisible[layer];
+        button.classList.toggle("on", layerVisible[layer]);
+        setLayerVisibility();
+      });
+    });
+
+    $("rainbowButton").addEventListener("click", event => {
       features.rainbow = !features.rainbow;
       event.currentTarget.textContent = features.rainbow
-        ? "🌈 Радужная кисть: вкл."
-        : "🌈 Радужная кисть: выкл.";
-
-      document
-        .querySelector('[data-feature="rainbow"]')
-        ?.classList.toggle("on", features.rainbow);
-
+        ? "🌈 Радужная: вкл."
+        : "🌈 Радужная: выкл.";
       showHint(features.rainbow ? "Радужная кисть включена" : "Радужная кисть выключена");
     });
 
-    document.getElementById("symmetryButton").addEventListener("click", event => {
-      symmetryEnabled = !symmetryEnabled;
-      event.currentTarget.classList.toggle("active", symmetryEnabled);
-      event.currentTarget.textContent = symmetryEnabled
-        ? "Зеркало: вкл."
-        : "Зеркало: выкл.";
-
-      showHint(symmetryEnabled ? "Зеркальное рисование включено" : "Симметрия выключена");
+    $("symmetryButton").addEventListener("click", event => {
+      symmetry = !symmetry;
+      event.currentTarget.textContent = symmetry ? "Зеркало: вкл." : "Зеркало: выкл.";
+      event.currentTarget.classList.toggle("selected", symmetry);
+      showHint(symmetry ? "Симметрия включена" : "Симметрия выключена");
     });
 
-    document.getElementById("undoButton").addEventListener("click", undo);
-    document.getElementById("redoButton").addEventListener("click", redo);
+    $("placeTextButton").addEventListener("click", () => {
+      if (!features.text) {
+        showHint("Текст выключен в настройках");
+        return;
+      }
+      if (!$("textInput").value.trim()) {
+        $("textInput").focus();
+        showHint("Сначала введи текст");
+        return;
+      }
 
-    document.getElementById("clearAllButton").addEventListener("click", () => {
+      activeLayer = "text";
+      $("activeLayerPicker").value = "text";
+      pendingText = true;
+      closePanel();
+      setStatus("Укажи пальцем место для текста");
+      showHint("Укажи пальцем место для текста");
+    });
+
+    function placeText(point) {
+      const value = $("textInput").value.trim();
+      if (!value) return;
+
+      const action = {
+        type: "text",
+        layer: "text",
+        text: value,
+        x: point.x,
+        y: point.y,
+        size: Math.max(24, brushSize * 4),
+        color: features.rainbow
+          ? `hsl(${(rainbowHue += 7) % 360} 100% 58%)`
+          : drawingColor,
+        mirror: symmetry
+      };
+
+      addAction(action);
+      renderAction(action);
+      pendingText = false;
+      showHint("Текст добавлен");
+      sound("text");
+    }
+
+    $("undoButton").addEventListener("click", undo);
+    $("redoButton").addEventListener("click", redo);
+
+    $("clearAllButton").addEventListener("click", () => {
       actions = [];
       redoActions = [];
       activeStrokes.clear();
       redrawAll();
-      setStatus("Все слои очищены");
-      showHint("Холст очищен");
-      playSound("erase");
+      showHint("Все слои очищены");
     });
 
-    document.getElementById("clearLayerButton").addEventListener("click", () => {
-      clearLayer(activeLayer);
+    $("clearLayerButton").addEventListener("click", () => {
+      actions = actions.filter(action => action.layer !== activeLayer);
+      redoActions = [];
+      activeStrokes.clear();
+      redrawAll();
+      showHint("Активный слой очищен");
     });
 
-    document.getElementById("saveButton").addEventListener("click", () => {
+    $("saveButton").addEventListener("click", () => {
       const output = document.createElement("canvas");
       const dpr = Math.min(devicePixelRatio || 1, 2);
-
       output.width = Math.round(innerWidth * dpr);
       output.height = Math.round(innerHeight * dpr);
 
@@ -1592,32 +1219,8 @@
       context.scale(dpr, dpr);
 
       if (layerVisible.background) {
-        context.fillStyle = selectedBackgroundColor || "#000";
-      } else {
-        context.fillStyle = "#000";
-      }
-
-      context.fillRect(0, 0, innerWidth, innerHeight);
-
-      if (!selectedBackgroundColor && layerVisible.background && video.readyState >= 2) {
-        const scale = Math.max(
-          innerWidth / video.videoWidth,
-          innerHeight / video.videoHeight
-        );
-        const shownWidth = video.videoWidth * scale;
-        const shownHeight = video.videoHeight * scale;
-        const cropX = (shownWidth - innerWidth) / 2;
-        const cropY = (shownHeight - innerHeight) / 2;
-
-        context.save();
-        context.translate(innerWidth, 0);
-        context.scale(-1, 1);
-        context.drawImage(
-          video,
-          0, 0, video.videoWidth, video.videoHeight,
-          -cropX, -cropY, shownWidth, shownHeight
-        );
-        context.restore();
+        context.fillStyle = backgroundColor || "#000";
+        context.fillRect(0, 0, innerWidth, innerHeight);
       }
 
       if (layerVisible.drawing) context.drawImage(drawingCanvas, 0, 0, innerWidth, innerHeight);
@@ -1627,82 +1230,66 @@
       link.download = "neon-risunok.png";
       link.href = output.toDataURL("image/png");
       link.click();
-
-      setStatus("Рисунок сохранён в PNG");
-      showHint("Рисунок сохранён");
-      playSound("tap");
+      showHint("PNG сохранён");
     });
 
     function detectHeart(hands) {
       if (hands.length < 2) return null;
 
-      const ordered = hands
-        .map(hand => ({ hand, wrist: mapPoint(hand[0]) }))
-        .filter(item => item.wrist)
-        .sort((a, b) => a.wrist.x - b.wrist.x);
+      const first = hands[0];
+      const second = hands[1];
+      const a = mapPoint(first[8]);
+      const b = mapPoint(second[8]);
+      const ta = mapPoint(first[4]);
+      const tb = mapPoint(second[4]);
+      const wa = mapPoint(first[0]);
+      const wb = mapPoint(second[0]);
 
-      if (ordered.length < 2) return null;
+      if (!a || !b || !ta || !tb || !wa || !wb) return null;
 
-      const left = ordered[0].hand;
-      const right = ordered[1].hand;
-      const li = mapPoint(left[8]);
-      const ri = mapPoint(right[8]);
-      const lt = mapPoint(left[4]);
-      const rt = mapPoint(right[4]);
-      const lw = mapPoint(left[0]);
-      const rw = mapPoint(right[0]);
+      const wrists = distance(wa, wb);
+      if (
+        wrists > 60 &&
+        distance(a, b) < wrists * 0.65 &&
+        distance(ta, tb) < wrists * 0.65
+      ) {
+        return {
+          x: (a.x + b.x + ta.x + tb.x) / 4,
+          y: (a.y + b.y + ta.y + tb.y) / 4,
+          size: Math.max(80, Math.min(240, wrists * 0.8))
+        };
+      }
 
-      if (!li || !ri || !lt || !rt || !lw || !rw) return null;
-
-      const wristDistance = distance(lw, rw);
-      const tolerance = sensitivityFactor();
-
-      const valid =
-        wristDistance > 60 &&
-        distance(li, ri) < wristDistance * 0.55 * tolerance &&
-        distance(lt, rt) < wristDistance * 0.55 * tolerance &&
-        (li.y + ri.y) / 2 < (lt.y + rt.y) / 2 + 20 * tolerance;
-
-      if (!valid) return null;
-
-      return {
-        x: (li.x + ri.x + lt.x + rt.x) / 4,
-        y: (li.y + ri.y + lt.y + rt.y) / 4,
-        size: Math.max(80, Math.min(250, wristDistance * 0.8))
-      };
+      return null;
     }
 
     function drawHeart(center) {
       const points = [];
-      const size = center.size;
 
-      for (let t = 0; t <= Math.PI * 2; t += 0.06) {
+      for (let t = 0; t <= Math.PI * 2; t += 0.07) {
         const x = 16 * Math.sin(t) ** 3;
-        const y =
-          13 * Math.cos(t) -
-          5 * Math.cos(2 * t) -
-          2 * Math.cos(3 * t) -
-          Math.cos(4 * t);
+        const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) -
+          2 * Math.cos(3 * t) - Math.cos(4 * t);
 
         points.push({
-          x: center.x + (x / 34) * size,
-          y: center.y - (y / 34) * size * 0.85
+          x: center.x + x * center.size / 34,
+          y: center.y - y * center.size / 40
         });
       }
 
       const action = {
         type: "stroke",
         layer: activeLayer,
-        color: currentColor(),
-        width: Math.max(4, brushSize),
+        points,
+        width: brushSize,
+        color: drawingColor,
         brush: selectedBrush,
-        mirror: symmetryEnabled,
-        points
+        mirror: symmetry
       };
 
       addAction(action);
       renderAction(action);
-      playSound("heart");
+      sound("heart");
       showHint("Сердце нарисовано");
     }
 
@@ -1710,136 +1297,11 @@
       cinemaMeme.classList.add("visible");
       cinemaMeme.setAttribute("aria-hidden", "false");
       clearTimeout(cinemaTimer);
-
       cinemaTimer = setTimeout(() => {
         cinemaMeme.classList.remove("visible");
         cinemaMeme.setAttribute("aria-hidden", "true");
       }, 3000);
-
-      playSound("tap");
       showHint("Absolute Cinema");
-    }
-
-    function drawSkeleton(hands) {
-      overlay.clearRect(0, 0, innerWidth, innerHeight);
-
-      for (const hand of hands) {
-        for (const [a, b] of CONNECTIONS) {
-          const p1 = mapPoint(hand[a]);
-          const p2 = mapPoint(hand[b]);
-          if (!p1 || !p2) continue;
-
-          overlay.beginPath();
-          overlay.moveTo(p1.x, p1.y);
-          overlay.lineTo(p2.x, p2.y);
-          overlay.lineCap = "round";
-          overlay.lineJoin = "round";
-          overlay.strokeStyle = "rgba(0,205,255,.9)";
-          overlay.lineWidth = 3;
-          overlay.shadowColor = "#00bfff";
-          overlay.shadowBlur = 7;
-          overlay.stroke();
-        }
-
-        for (const landmark of hand) {
-          const point = mapPoint(landmark);
-          if (!point) continue;
-
-          overlay.beginPath();
-          overlay.arc(point.x, point.y, 2.5, 0, Math.PI * 2);
-          overlay.fillStyle = "#eaffff";
-          overlay.shadowColor = "#00bfff";
-          overlay.shadowBlur = 7;
-          overlay.fill();
-        }
-      }
-
-      overlay.shadowBlur = 0;
-    }
-
-    function drawCursor(point, color = drawingColor) {
-      function drawOne(x, y) {
-        overlay.beginPath();
-        overlay.arc(x, y, Math.max(8, brushSize), 0, Math.PI * 2);
-        overlay.lineWidth = 2;
-        overlay.strokeStyle = color;
-        overlay.shadowColor = color;
-        overlay.shadowBlur = 12;
-        overlay.stroke();
-      }
-
-      overlay.save();
-      drawOne(point.x, point.y);
-      if (symmetryEnabled) drawOne(innerWidth - point.x, point.y);
-      overlay.restore();
-    }
-
-    function drawEraseCursor(point) {
-      const radius = eraserSize / 2;
-
-      function drawOne(x, y) {
-        overlay.beginPath();
-        overlay.arc(x, y, radius, 0, Math.PI * 2);
-        overlay.fillStyle = "rgba(255, 53, 189, 0.18)";
-        overlay.fill();
-
-        overlay.beginPath();
-        overlay.arc(x, y, radius, 0, Math.PI * 2);
-        overlay.lineWidth = 4;
-        overlay.strokeStyle = "#ff8bd8";
-        overlay.shadowColor = "#ff35bd";
-        overlay.shadowBlur = 16;
-        overlay.stroke();
-      }
-
-      overlay.save();
-      drawOne(point.x, point.y);
-      if (symmetryEnabled) drawOne(innerWidth - point.x, point.y);
-      overlay.restore();
-    }
-
-    function horizontalPointDirection(hand) {
-      const tip = mapPoint(hand[8]);
-      const base = mapPoint(hand[5]);
-      const pip = mapPoint(hand[6]);
-      const wrist = mapPoint(hand[0]);
-      const palm = mapPoint(hand[9]);
-
-      if (!tip || !base || !pip || !wrist || !palm) return "";
-
-      const factor = sensitivityFactor();
-      const indexExtended =
-        distance(hand[8], hand[5]) >
-        distance(hand[6], hand[5]) * (1.28 / factor);
-
-      if (!indexExtended) return "";
-
-      const curledCount = [
-        [12,10],
-        [16,14],
-        [20,18]
-      ].filter(([fingerTip, joint]) =>
-        distance(hand[fingerTip], hand[0]) <
-        distance(hand[joint], hand[0]) * (1.45 / factor)
-      ).length;
-
-      if (curledCount < 2) return "";
-
-      const dx = tip.x - base.x;
-      const dy = tip.y - base.y;
-      const palmSize = Math.max(1, distance(wrist, palm));
-
-      if (Math.abs(dx) < palmSize * (0.42 / factor)) return "";
-      if (Math.abs(dx) < Math.abs(dy) * (1.25 / factor)) return "";
-
-      return dx < 0 ? "undo" : "redo";
-    }
-
-    function resetGestureTracking() {
-      gestureDirection = "";
-      gestureStartedAt = 0;
-      gestureLastSeenAt = 0;
-      gestureLatched = false;
     }
 
     function processFrame() {
@@ -1847,11 +1309,7 @@
       requestAnimationFrame(processFrame);
 
       try {
-        if (
-          !landmarker ||
-          video.readyState < 2 ||
-          video.currentTime === lastVideoTime
-        ) return;
+        if (!landmarker || video.readyState < 2 || video.currentTime === lastVideoTime) return;
 
         lastVideoTime = video.currentTime;
         const now = performance.now();
@@ -1864,16 +1322,14 @@
         if (modal.classList.contains("open")) return;
 
         if (features.menuGesture) {
-          const pose = hands.some(hasMenuPose);
+          const pose = hands.some(menuPose);
           menuFrames = pose ? menuFrames + 1 : 0;
 
           if (menuFrames >= 8 && !menuLatched) {
             menuLatched = true;
             openPanel("settings");
-            showHint("Настройки открыты");
             return;
           }
-
           if (!pose) menuLatched = false;
         }
 
@@ -1881,31 +1337,23 @@
           const heart = detectHeart(hands);
 
           if (heart) {
-            if (!heartWasDetected) drawHeart(heart);
-            heartWasDetected = true;
-            activeStrokes.clear();
-            setStatus("Сердце нарисовано");
+            if (!heartLatched) drawHeart(heart);
+            heartLatched = true;
             return;
           }
         }
+        heartLatched = false;
 
-        heartWasDetected = false;
-
-        if (
-          features.cinema &&
-          hands.length >= 2 &&
-          hands.every(isOpenHand)
-        ) {
+        if (features.cinema && hands.length >= 2 && hands.every(openHand)) {
           cinemaFrames++;
 
-          if (cinemaFrames >= 18 && !cinemaLatched) {
+          if (cinemaFrames > 16 && !cinemaLatched) {
             cinemaLatched = true;
             showCinema();
           }
 
+          resetDirection();
           finishStrokesExcept(new Set());
-          resetGestureTracking();
-          setStatus("Absolute Cinema");
           return;
         }
 
@@ -1913,14 +1361,14 @@
         cinemaLatched = false;
 
         if (!hands.length) {
+          resetDirection();
           finishStrokesExcept(new Set());
-          resetGestureTracking();
           setStatus("Покажи руку в камеру");
           return;
         }
 
         if (features.undoRedo && hands.length === 1) {
-          const direction = horizontalPointDirection(hands[0]);
+          const direction = directionGesture(hands[0]);
 
           if (direction) {
             if (direction !== gestureDirection) {
@@ -1932,108 +1380,91 @@
             gestureLastSeenAt = now;
             finishStrokesExcept(new Set());
 
-            const holdTime = Math.max(300, GESTURE_HOLD_MS - sensitivity * 15);
-
-            if (!gestureLatched && now - gestureStartedAt >= holdTime) {
+            if (!gestureLatched && now - gestureStartedAt > 450) {
               gestureLatched = true;
               if (direction === "undo") undo();
               else redo();
             } else if (!gestureLatched) {
-              setStatus(direction === "undo"
-                ? "Держи палец влево — отмена"
-                : "Держи палец вправо — возврат");
+              setStatus(direction === "undo" ? "Держи палец влево — отмена" : "Держи вправо — возврат");
             }
 
             return;
           }
 
-          if (
-            gestureDirection &&
-            now - gestureLastSeenAt <= GESTURE_LOST_GRACE_MS
-          ) {
-            finishStrokesExcept(new Set());
-            return;
-          }
+          if (gestureDirection && now - gestureLastSeenAt < 180) return;
         }
 
-        resetGestureTracking();
+        resetDirection();
 
         const activeKeys = new Set();
-        let didDraw = false;
-        let didErase = false;
+        let drawing = false;
+        let erasing = false;
 
         if (
           hands.length === 1 &&
           features.twoFingerDraw &&
           classifyHand(hands[0]) === "twoDraw"
         ) {
-          const hand = hands[0];
-          const first = mapPoint(hand[8]);
-          const second = mapPoint(hand[12]);
+          const one = mapPoint(hands[0][8]);
+          const two = mapPoint(hands[0][12]);
 
-          if (first && second) {
-            activeKeys.add("v-index");
-            activeKeys.add("v-middle");
-            continueStroke("v-index", first);
-            continueStroke("v-middle", second);
-            drawCursor(first, drawingColor);
-            drawCursor(second, drawingColor);
-            didDraw = true;
+          if (one && two) {
+            activeKeys.add("two-a");
+            activeKeys.add("two-b");
+            continueStroke("two-a", one);
+            continueStroke("two-b", two);
+            drawing = true;
           }
         } else {
-          for (let i = 0; i < hands.length; i++) {
-            const hand = hands[i];
+          hands.forEach((hand, index) => {
             const mode = classifyHand(hand);
+            const point = mapPoint(hand[8]);
+            if (!point) return;
 
-            if (mode === "one" && features.draw) {
-              const point = mapPoint(hand[8]);
-              if (!point) continue;
-
+            if (mode === "draw" && features.draw) {
               if (pendingText && features.text) {
                 placeText(point);
-                continue;
+                return;
               }
 
-              const key = `hand-${i}`;
+              const key = `hand-${index}`;
               activeKeys.add(key);
               continueStroke(key, point);
-              drawCursor(point, drawingColor);
-              didDraw = true;
+              drawing = true;
             } else if (mode === "erase" && features.erase) {
-              const point = mapPoint(hand[8]);
-              if (!point) continue;
-
               activeKeys.add("erase");
               continueErase(point);
-              drawEraseCursor(point);
-              didErase = true;
+              drawEraserCursor(point);
+              erasing = true;
             }
-          }
+          });
         }
 
         finishStrokesExcept(activeKeys);
 
-        if (didErase) {
-          setStatus(`Стираешь · слой: ${activeLayer === "text" ? "текст" : "рисунок"}`);
-        } else if (didDraw) {
-          setStatus(`Рисуешь · ${selectedBrush}`);
-        } else {
-          setStatus("Покажи жест или открой меню");
-        }
+        if (erasing) setStatus("Стираешь");
+        else if (drawing) setStatus(`Рисуешь · ${selectedBrush}`);
+        else if (pendingText) setStatus("Укажи пальцем место для текста");
+        else setStatus("Покажи жест для рисования");
       } catch (error) {
-        console.error("Ошибка обработки кадра:", error);
-        setStatus(`Ошибка: ${error.message || error}`);
+        console.error(error);
+        setStatus(`Ошибка распознавания: ${error.message || error}`);
         activeStrokes.clear();
       }
     }
 
+    // Слушатель назначается сразу, без ожидания загрузки MediaPipe.
     startButton.addEventListener("click", async () => {
+      if (starting || running) return;
+
+      starting = true;
       startButton.disabled = true;
+      startButton.textContent = "Запускаю…";
       setStatus("Запрашиваю доступ к камере…");
 
       try {
         if (!navigator.mediaDevices?.getUserMedia) {
-          throw new Error("Открой сайт через HTTPS.");
+          throw new Error("Камера требует HTTPS и современный браузер.");
         }
 
         cameraStream = await navigator.mediaDevices.getUserMedia({
@@ -2049,12 +1480,12 @@
         video.srcObject = cameraStream;
         await video.play();
 
-        audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
-        if (audioContext.state === "suspended") await audioContext.resume();
+        setStatus("Загружаю распознавание рук…");
+        const visionModule = await import(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs"
+        );
 
-        setStatus("Загружаю распознавание…");
-
-        const vision = await FilesetResolver.forVisionTasks(
+        const vision = await visionModule.FilesetResolver.forVisionTasks(
           "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm"
         );
 
@@ -2070,13 +1501,14 @@
         };
 
         try {
-          landmarker = await HandLandmarker.createFromOptions(vision, {
+          landmarker = await visionModule.HandLandmarker.createFromOptions(vision, {
             ...options,
             baseOptions: { modelAssetPath, delegate: "GPU" }
           });
         } catch (gpuError) {
-          console.warn("GPU недоступен, использую CPU:", gpuError);
-          landmarker = await HandLandmarker.createFromOptions(vision, {
+          console.warn("GPU недоступен; пробую CPU:", gpuError);
+
+          landmarker = await visionModule.HandLandmarker.createFromOptions(vision, {
             ...options,
             baseOptions: { modelAssetPath, delegate: "CPU" }
           });
@@ -2088,21 +1520,19 @@
         showHint("Камера включена");
         requestAnimationFrame(processFrame);
       } catch (error) {
-        console.error(error);
-        setStatus(`Не удалось запустить: ${error.message || error}`);
-        startButton.disabled = false;
-        startButton.textContent = "Попробовать снова";
+        console.error("Ошибка запуска камеры:", error);
+
         cameraStream?.getTracks().forEach(track => track.stop());
         cameraStream = null;
         video.srcObject = null;
-      }
-    });
 
-    cinemaPhoto.addEventListener("error", () => {
-      if (cinemaPhoto.dataset.fallbackUsed) return;
-      cinemaPhoto.dataset.fallbackUsed = "true";
-      cinemaPhoto.src =
-        "https://i.kym-cdn.com/photos/images/newsfeed/002/693/300/817.jpg";
+        startButton.disabled = false;
+        startButton.textContent = "Попробовать снова";
+        startButton.style.display = "block";
+        setStatus(`Не удалось запустить: ${error.message || error}`);
+      } finally {
+        starting = false;
+      }
     });
 
     addEventListener("resize", resizeCanvases);
@@ -2116,8 +1546,8 @@
       audioContext?.close?.();
     });
 
-    updateLayerVisibility();
     resizeCanvases();
+    setLayerVisibility();
   </script>
 </body>
 </html>
