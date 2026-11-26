@@ -18,7 +18,9 @@
       font-family: Arial, sans-serif;
     }
 
-    #camera, #backgroundLayer, canvas {
+    #camera,
+    #backgroundLayer,
+    canvas {
       position: fixed;
       inset: 0;
       width: 100%;
@@ -54,6 +56,7 @@
       background: #03131b;
       color: #80eaff;
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
 
     button:disabled {
@@ -63,7 +66,7 @@
 
     #startButton {
       position: fixed;
-      z-index: 9999;
+      z-index: 99999;
       top: 50%;
       left: 50%;
       display: block;
@@ -76,12 +79,11 @@
       font-size: 16px;
       pointer-events: auto;
       touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
     }
 
     #mainBar {
       position: fixed;
-      z-index: 10;
+      z-index: 20;
       left: 50%;
       bottom: max(10px, env(safe-area-inset-bottom));
       display: flex;
@@ -93,6 +95,7 @@
       border-radius: 14px;
       background: rgb(0 0 0 / 90%);
       box-shadow: 0 0 18px rgb(0 180 255 / 22%);
+      backdrop-filter: blur(8px);
     }
 
     #mainBar button {
@@ -102,7 +105,7 @@
 
     #status {
       position: fixed;
-      z-index: 11;
+      z-index: 21;
       bottom: calc(max(10px, env(safe-area-inset-bottom)) + 65px);
       left: 50%;
       max-width: calc(100% - 24px);
@@ -119,7 +122,7 @@
 
     #hintToast {
       position: fixed;
-      z-index: 12;
+      z-index: 22;
       top: max(12px, env(safe-area-inset-top));
       left: 50%;
       display: none;
@@ -169,19 +172,20 @@
     .panel h2 { margin: 0 0 12px; font-size: 20px; }
     .panel h3 { margin: 15px 0 8px; font-size: 14px; }
 
-    .gesture-list, .note {
+    .gesture-list {
+      padding: 10px 12px;
+      border-radius: 11px;
+      background: #0b1c24;
       color: #d8f8ff;
       font-size: 12px;
       line-height: 1.6;
     }
 
-    .gesture-list {
-      padding: 10px 12px;
-      border-radius: 11px;
-      background: #0b1c24;
+    .note {
+      color: #a9c3ca;
+      font-size: 12px;
+      line-height: 1.45;
     }
-
-    .note { color: #a9c3ca; }
 
     .grid {
       display: grid;
@@ -340,12 +344,15 @@
 <body>
   <video id="camera" autoplay muted playsinline></video>
   <div id="backgroundLayer"></div>
-
   <canvas id="drawingCanvas"></canvas>
   <canvas id="textCanvas"></canvas>
   <canvas id="overlayCanvas"></canvas>
 
-  <button id="startButton" type="button">Включить камеру</button>
+  <!-- onclick — кнопка вызывает функцию напрямую -->
+  <button id="startButton" type="button" onclick="startCamera()">
+    Включить камеру
+  </button>
+
   <div id="hintToast" aria-live="polite"></div>
   <div id="status">Нажми «Включить камеру»</div>
 
@@ -356,16 +363,17 @@
 
   <div id="cinemaMeme" aria-hidden="true">
     <div class="meme-card">
-      <img id="cinemaPhoto" src="./absolute-cinema.jpg" alt="Absolute Cinema">
+      <img src="./absolute-cinema.jpg" alt="Absolute Cinema"
+           onerror="this.style.display='none'">
       <div class="meme-caption">ABSOLUTE<br>CINEMA</div>
     </div>
   </div>
 
-  <section id="modal">
+  <section id="modal" aria-label="Панель управления">
     <section id="settingsPanel" class="panel">
       <h2>Настройки</h2>
 
-      <h3>Жесты</h3>
+      <h3>Список жестов</h3>
       <div class="gesture-list">
         ☝️ Один указательный палец вверх — рисовать.<br>
         ✌️ Указательный и средний близко — стирать.<br>
@@ -386,15 +394,15 @@
 
       <h3>Функции</h3>
       <div class="toggle-list">
-        <div class="toggle-row"><span>Рисование одним пальцем</span><button class="switch on" data-feature="draw"></button></div>
-        <div class="toggle-row"><span>Стирание</span><button class="switch on" data-feature="erase"></button></div>
-        <div class="toggle-row"><span>Рисование двумя пальцами V</span><button class="switch on" data-feature="twoFingerDraw"></button></div>
-        <div class="toggle-row"><span>Сердце</span><button class="switch on" data-feature="heart"></button></div>
-        <div class="toggle-row"><span>Absolute Cinema</span><button class="switch on" data-feature="cinema"></button></div>
-        <div class="toggle-row"><span>Текст</span><button class="switch on" data-feature="text"></button></div>
-        <div class="toggle-row"><span>Отмена/возврат жестом</span><button class="switch on" data-feature="undoRedo"></button></div>
-        <div class="toggle-row"><span>Настройки тремя пальцами</span><button class="switch on" data-feature="menuGesture"></button></div>
-        <div class="toggle-row"><span>Звуки</span><button class="switch on" data-feature="sounds"></button></div>
+        <div class="toggle-row"><span>Рисование одним пальцем</span><button class="switch on" data-feature="draw" type="button"></button></div>
+        <div class="toggle-row"><span>Стирание</span><button class="switch on" data-feature="erase" type="button"></button></div>
+        <div class="toggle-row"><span>Рисование двумя пальцами V</span><button class="switch on" data-feature="twoFingerDraw" type="button"></button></div>
+        <div class="toggle-row"><span>Сердце</span><button class="switch on" data-feature="heart" type="button"></button></div>
+        <div class="toggle-row"><span>Absolute Cinema</span><button class="switch on" data-feature="cinema" type="button"></button></div>
+        <div class="toggle-row"><span>Текст</span><button class="switch on" data-feature="text" type="button"></button></div>
+        <div class="toggle-row"><span>Отмена/возврат жестом</span><button class="switch on" data-feature="undoRedo" type="button"></button></div>
+        <div class="toggle-row"><span>Настройки тремя пальцами</span><button class="switch on" data-feature="menuGesture" type="button"></button></div>
+        <div class="toggle-row"><span>Звуки</span><button class="switch on" data-feature="sounds" type="button"></button></div>
       </div>
 
       <h3>Действия</h3>
@@ -446,10 +454,14 @@
         <label for="backgroundColorPicker">Цвет фона</label>
         <input id="backgroundColorPicker" type="color" value="#111827">
       </div>
-      <button id="cameraBackgroundButton" class="wide" type="button">Вернуть фон камеры</button>
+      <button id="cameraBackgroundButton" class="wide" type="button">
+        Вернуть фон камеры
+      </button>
 
       <h3>Слои</h3>
-      <p class="note">Выбери слой для рисования. Скрытый слой не попадёт в изображение.</p>
+      <p class="note">
+        Выбери слой для рисования. Скрытые слои не отображаются и не сохраняются в PNG.
+      </p>
 
       <label class="row">
         <span>Активный слой</span>
@@ -460,1032 +472,60 @@
       </label>
 
       <div class="toggle-list">
-        <div class="toggle-row"><span>Показывать рисунок</span><button class="switch on" data-layer="drawing"></button></div>
-        <div class="toggle-row"><span>Показывать текст</span><button class="switch on" data-layer="text"></button></div>
-        <div class="toggle-row"><span>Показывать фон</span><button class="switch on" data-layer="background"></button></div>
+        <div class="toggle-row"><span>Показывать рисунок</span><button class="switch on" data-layer="drawing" type="button"></button></div>
+        <div class="toggle-row"><span>Показывать текст</span><button class="switch on" data-layer="text" type="button"></button></div>
+        <div class="toggle-row"><span>Показывать фон</span><button class="switch on" data-layer="background" type="button"></button></div>
       </div>
 
-      <input id="textInput" type="text" maxlength="40" placeholder="Введи текст" style="width:100%;min-height:40px;margin-top:10px;padding:0 9px;border:1px solid #087fa8;border-radius:9px;background:#03131b;color:white">
+      <input id="textInput" type="text" maxlength="40" placeholder="Введи текст"
+             style="width:100%;min-height:40px;margin-top:10px;padding:0 9px;border:1px solid #087fa8;border-radius:9px;background:#03131b;color:white">
       <button id="placeTextButton" class="wide" type="button">Поставить текст пальцем</button>
       <button id="clearLayerButton" class="wide danger" type="button">Очистить активный слой</button>
       <button class="wide" type="button" data-close>Готово</button>
     </section>
   </section>
 
-  <script type="module">
-    // Здесь нет статического импорта MediaPipe: кнопка запуска остаётся рабочей,
-    // даже если CDN недоступен. Библиотека загружается после нажатия.
-    const $ = id => document.getElementById(id);
-
-    const video = $("camera");
-    const backgroundLayer = $("backgroundLayer");
-    const drawingCanvas = $("drawingCanvas");
-    const textCanvas = $("textCanvas");
-    const overlayCanvas = $("overlayCanvas");
-
-    const drawingContext = drawingCanvas.getContext("2d");
-    const textContext = textCanvas.getContext("2d");
-    const overlay = overlayCanvas.getContext("2d");
-
-    const startButton = $("startButton");
-    const status = $("status");
-    const hintToast = $("hintToast");
-    const modal = $("modal");
-    const settingsPanel = $("settingsPanel");
-    const toolsPanel = $("toolsPanel");
-    const cinemaMeme = $("cinemaMeme");
-
-    const CONNECTIONS = [
-      [0,1], [1,2], [2,3], [3,4],
-      [0,5], [5,6], [6,7], [7,8],
-      [5,9], [9,10], [10,11], [11,12],
-      [9,13], [13,14], [14,15], [15,16],
-      [13,17], [17,18], [18,19], [19,20],
-      [0,17]
-    ];
-
-    const features = {
-      draw: true,
-      erase: true,
-      twoFingerDraw: true,
-      heart: true,
-      cinema: true,
-      text: true,
-      undoRedo: true,
-      menuGesture: true,
-      sounds: true,
-      rainbow: false
-    };
-
-    const layerVisible = {
-      drawing: true,
-      text: true,
-      background: true
-    };
-
-    let landmarker = null;
-    let cameraStream = null;
-    let running = false;
-    let starting = false;
-    let lastVideoTime = -1;
-    let smoothedHands = [];
-
-    let drawingColor = "#00cfff";
-    let backgroundColor = null;
-    let brushSize = 7;
-    let eraserSize = 36;
-    let sensitivity = 5;
-    let rainbowHue = 0;
-    let selectedBrush = "neon";
-    let symmetry = false;
-    let activeLayer = "drawing";
-    let pendingText = false;
-
-    let actions = [];
-    let redoActions = [];
-    let activeStrokes = new Map();
-
-    let menuFrames = 0;
-    let menuLatched = false;
-    let cinemaFrames = 0;
-    let cinemaLatched = false;
-    let heartLatched = false;
-    let cinemaTimer = null;
-
-    let gestureDirection = "";
-    let gestureStartedAt = 0;
-    let gestureLastSeenAt = 0;
-    let gestureLatched = false;
-
-    let audioContext = null;
-    let lastSoundTime = 0;
-    let hintTimer = null;
-
-    const MAX_ACTIONS = 80;
-
-    function setStatus(message) {
-      status.textContent = message;
-    }
-
-    function showHint(message) {
-      hintToast.textContent = message;
-      hintToast.classList.add("visible");
-      clearTimeout(hintTimer);
-      hintTimer = setTimeout(() => hintToast.classList.remove("visible"), 1200);
-    }
-
-    function getContext(layer) {
-      return layer === "text" ? textContext : drawingContext;
-    }
-
-    function sound(kind = "tap") {
-      if (!features.sounds) return;
-
-      try {
-        audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
-        if (audioContext.state === "suspended") audioContext.resume();
-
-        const oscillator = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        const now = audioContext.currentTime;
-        const frequencies = {
-          tap: 520, draw: 520, erase: 260,
-          undo: 390, redo: 620, heart: 740, text: 580
-        };
-
-        oscillator.type = "sine";
-        oscillator.frequency.value = frequencies[kind] || 500;
-        gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(kind === "draw" ? 0.025 : 0.06, now + 0.015);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
-        oscillator.connect(gain);
-        gain.connect(audioContext.destination);
-        oscillator.start(now);
-        oscillator.stop(now + 0.12);
-      } catch (error) {
-        console.warn("Звук недоступен:", error);
-      }
-    }
-
-    function drawSound() {
-      const now = performance.now();
-      if (now - lastSoundTime < 180) return;
-      lastSoundTime = now;
-      sound("draw");
-    }
-
-    function setLayerVisibility() {
-      drawingCanvas.style.visibility = layerVisible.drawing ? "visible" : "hidden";
-      textCanvas.style.visibility = layerVisible.text ? "visible" : "hidden";
-      backgroundLayer.style.visibility = layerVisible.background ? "visible" : "hidden";
-      video.style.visibility =
-        backgroundColor && layerVisible.background ? "hidden" : "visible";
-    }
-
-    function resizeCanvases() {
-      const width = innerWidth;
-      const height = innerHeight;
-      const dpr = Math.min(devicePixelRatio || 1, 2);
-
-      for (const canvas of [drawingCanvas, textCanvas, overlayCanvas]) {
-        canvas.width = Math.round(width * dpr);
-        canvas.height = Math.round(height * dpr);
-        canvas.style.width = `${width}px`;
-        canvas.style.height = `${height}px`;
-        canvas.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0);
-      }
-
-      redrawAll();
-    }
-
-    function mapPoint(point) {
-      if (!video.videoWidth || !video.videoHeight) return null;
-
-      const scale = Math.max(innerWidth / video.videoWidth, innerHeight / video.videoHeight);
-      const shownWidth = video.videoWidth * scale;
-      const shownHeight = video.videoHeight * scale;
-      const cropX = (shownWidth - innerWidth) / 2;
-      const cropY = (shownHeight - innerHeight) / 2;
-
-      return {
-        x: innerWidth - (point.x * shownWidth - cropX),
-        y: point.y * shownHeight - cropY
-      };
-    }
-
-    function smoothHands(hands) {
-      if (!hands.length) {
-        smoothedHands = [];
-        return [];
-      }
-
-      const ordered = [...hands].sort((a, b) => a[0].x - b[0].x);
-
-      if (smoothedHands.length !== ordered.length) {
-        smoothedHands = ordered.map(hand =>
-          hand.map(point => ({ x: point.x, y: point.y, z: point.z || 0 }))
-        );
-        return smoothedHands;
-      }
-
-      for (let h = 0; h < ordered.length; h++) {
-        for (let i = 0; i < ordered[h].length; i++) {
-          const target = ordered[h][i];
-          const current = smoothedHands[h][i];
-          const blend = 0.72 + (sensitivity / 10) * 0.2;
-          current.x += (target.x - current.x) * blend;
-          current.y += (target.y - current.y) * blend;
-          current.z += ((target.z || 0) - current.z) * blend;
-        }
-      }
-
-      return smoothedHands;
-    }
-
-    function distance(a, b) {
-      return Math.hypot(a.x - b.x, a.y - b.y);
-    }
-
-    function fingerUp(hand, tip, joint) {
-      const threshold = 0.02 - sensitivity * 0.0012;
-      return hand[tip].y < hand[joint].y - threshold;
-    }
-
-    function classifyHand(hand) {
-      const index = fingerUp(hand, 8, 6);
-      const middle = fingerUp(hand, 12, 10);
-      const ring = fingerUp(hand, 16, 14);
-      const pinky = fingerUp(hand, 20, 18);
-
-      if (index && !middle && !ring && !pinky) return "draw";
-
-      if (index && middle && !ring && !pinky) {
-        const palm = Math.max(0.001, distance(hand[0], hand[9]));
-        const spread = distance(hand[8], hand[12]) / palm;
-        return spread > 0.72 ? "twoDraw" : "erase";
-      }
-
-      return "";
-    }
-
-    function menuPose(hand) {
-      return fingerUp(hand, 8, 6) &&
-        fingerUp(hand, 12, 10) &&
-        fingerUp(hand, 16, 14) &&
-        !fingerUp(hand, 20, 18);
-    }
-
-    function openHand(hand) {
-      const wrist = hand[0];
-      return [[8,6], [12,10], [16,14], [20,18]]
-        .filter(([tip, joint]) =>
-          distance(hand[tip], wrist) > distance(hand[joint], wrist) * 1.02
-        ).length >= 4;
-    }
-
-    function strokeOne(context, a, b, width, color, brush) {
-      context.save();
-      context.beginPath();
-      context.moveTo(a.x, a.y);
-      context.lineTo(b.x, b.y);
-      context.lineCap = "round";
-      context.lineJoin = "round";
-      context.lineWidth = width;
-
-      if (brush === "dashed") {
-        context.setLineDash([width * 2, width * 1.5]);
-        context.strokeStyle = color;
-        context.stroke();
-      } else if (brush === "marker") {
-        context.globalAlpha = 0.72;
-        context.strokeStyle = color;
-        context.stroke();
-      } else if (brush === "soft") {
-        context.globalAlpha = 0.5;
-        context.strokeStyle = color;
-        context.shadowColor = color;
-        context.shadowBlur = width * 3;
-        context.stroke();
-      } else {
-        context.strokeStyle = color;
-        context.shadowColor = color;
-        context.shadowBlur = width * 2;
-        context.stroke();
-
-        context.beginPath();
-        context.moveTo(a.x, a.y);
-        context.lineTo(b.x, b.y);
-        context.lineWidth = Math.max(1.5, width * 0.22);
-        context.strokeStyle = "#fff";
-        context.shadowBlur = 3;
-        context.stroke();
-      }
-
-      context.restore();
-    }
-
-    function drawLine(context, a, b, action) {
-      strokeOne(context, a, b, action.width, action.color, action.brush);
-
-      if (action.mirror) {
-        strokeOne(
-          context,
-          { x: innerWidth - a.x, y: a.y },
-          { x: innerWidth - b.x, y: b.y },
-          action.width,
-          action.color,
-          action.brush
-        );
-      }
-    }
-
-    function eraseLine(context, a, b, action) {
-      function eraseOne(from, to) {
-        context.save();
-        context.globalCompositeOperation = "destination-out";
-        context.beginPath();
-        context.moveTo(from.x, from.y);
-        context.lineTo(to.x, to.y);
-        context.lineCap = "round";
-        context.lineWidth = action.width;
-        context.stroke();
-        context.restore();
-      }
-
-      eraseOne(a, b);
-
-      if (action.mirror) {
-        eraseOne(
-          { x: innerWidth - a.x, y: a.y },
-          { x: innerWidth - b.x, y: b.y }
-        );
-      }
-    }
-
-    function renderAction(action) {
-      const context = getContext(action.layer);
-
-      if (action.type === "stroke") {
-        if (action.points.length === 1) {
-          drawLine(context, action.points[0], action.points[0], action);
-        } else {
-          for (let i = 1; i < action.points.length; i++) {
-            drawLine(context, action.points[i - 1], action.points[i], action);
-          }
-        }
-      }
-
-      if (action.type === "erase") {
-        if (action.points.length === 1) {
-          eraseLine(context, action.points[0], action.points[0], action);
-        } else {
-          for (let i = 1; i < action.points.length; i++) {
-            eraseLine(context, action.points[i - 1], action.points[i], action);
-          }
-        }
-      }
-
-      if (action.type === "text") {
-        function putText(x) {
-          context.save();
-          context.font = `bold ${action.size}px Arial`;
-          context.textBaseline = "middle";
-          context.fillStyle = action.color;
-          context.shadowColor = action.color;
-          context.shadowBlur = 8;
-          context.fillText(action.text, x, action.y);
-          context.restore();
-        }
-
-        putText(action.x);
-        if (action.mirror) putText(innerWidth - action.x);
-      }
-    }
-
-    function redrawAll() {
-      if (!drawingContext || !textContext) return;
-
-      drawingContext.clearRect(0, 0, innerWidth, innerHeight);
-      textContext.clearRect(0, 0, innerWidth, innerHeight);
-
-      for (const action of actions) renderAction(action);
-    }
-
-    function addAction(action) {
-      actions.push(action);
-      if (actions.length > MAX_ACTIONS) actions.shift();
-      redoActions = [];
-    }
-
-    function beginStroke(key, point) {
-      const action = {
-        type: "stroke",
-        layer: activeLayer,
-        points: [{ ...point }],
-        width: brushSize,
-        color: features.rainbow
-          ? `hsl(${(rainbowHue += 7) % 360} 100% 58%)`
-          : drawingColor,
-        brush: selectedBrush,
-        mirror: symmetry
-      };
-
-      addAction(action);
-      activeStrokes.set(key, action);
-      drawLine(getContext(action.layer), point, point, action);
-      drawSound();
-    }
-
-    function continueStroke(key, point) {
-      const action = activeStrokes.get(key);
-
-      if (!action) {
-        beginStroke(key, point);
-        return;
-      }
-
-      const previous = action.points[action.points.length - 1];
-      if (distance(previous, point) < 0.8) return;
-
-      action.points.push({ ...point });
-      drawLine(getContext(action.layer), previous, point, action);
-      drawSound();
-    }
-
-    function beginErase(point) {
-      const action = {
-        type: "erase",
-        layer: activeLayer,
-        points: [{ ...point }],
-        width: eraserSize,
-        mirror: symmetry
-      };
-
-      addAction(action);
-      activeStrokes.set("erase", action);
-      eraseLine(getContext(action.layer), point, point, action);
-    }
-
-    function continueErase(point) {
-      const action = activeStrokes.get("erase");
-
-      if (!action) {
-        beginErase(point);
-        return;
-      }
-
-      const previous = action.points[action.points.length - 1];
-      if (distance(previous, point) < 1) return;
-
-      action.points.push({ ...point });
-      eraseLine(getContext(action.layer), previous, point, action);
-    }
-
-    function finishStrokesExcept(keys) {
-      for (const key of [...activeStrokes.keys()]) {
-        if (!keys.has(key)) activeStrokes.delete(key);
-      }
-    }
-
-    function undo() {
-      activeStrokes.clear();
-
-      if (!actions.length) {
-        setStatus("Нечего отменять");
-        showHint("Пока нечего отменять");
-        return;
-      }
-
-      redoActions.push(actions.pop());
-      redrawAll();
-      setStatus("Действие отменено");
-      showHint("Отменено");
-      sound("undo");
-    }
-
-    function redo() {
-      activeStrokes.clear();
-
-      if (!redoActions.length) {
-        setStatus("Сначала отмени действие");
-        showHint("Нечего возвращать");
-        return;
-      }
-
-      actions.push(redoActions.pop());
-      redrawAll();
-      setStatus("Действие возвращено");
-      showHint("Возвращено");
-      sound("redo");
-    }
-
-    function drawEraserCursor(point) {
-      function circle(x) {
-        overlay.beginPath();
-        overlay.arc(x, point.y, eraserSize / 2, 0, Math.PI * 2);
-        overlay.fillStyle = "rgba(255, 53, 189, .18)";
-        overlay.fill();
-        overlay.lineWidth = 4;
-        overlay.strokeStyle = "#ff8bd8";
-        overlay.shadowColor = "#ff35bd";
-        overlay.shadowBlur = 15;
-        overlay.stroke();
-      }
-
-      overlay.save();
-      circle(point.x);
-      if (symmetry) circle(innerWidth - point.x);
-      overlay.restore();
-    }
-
-    function drawSkeleton(hands) {
-      overlay.clearRect(0, 0, innerWidth, innerHeight);
-
-      for (const hand of hands) {
-        for (const [a, b] of CONNECTIONS) {
-          const p1 = mapPoint(hand[a]);
-          const p2 = mapPoint(hand[b]);
-          if (!p1 || !p2) continue;
-
-          overlay.beginPath();
-          overlay.moveTo(p1.x, p1.y);
-          overlay.lineTo(p2.x, p2.y);
-          overlay.lineWidth = 3;
-          overlay.lineCap = "round";
-          overlay.strokeStyle = "#00cfff";
-          overlay.shadowColor = "#00cfff";
-          overlay.shadowBlur = 7;
-          overlay.stroke();
-        }
-      }
-
-      overlay.shadowBlur = 0;
-    }
-
-    function directionGesture(hand) {
-      const tip = mapPoint(hand[8]);
-      const base = mapPoint(hand[5]);
-      const pip = mapPoint(hand[6]);
-      const wrist = mapPoint(hand[0]);
-      const palm = mapPoint(hand[9]);
-
-      if (!tip || !base || !pip || !wrist || !palm) return "";
-
-      const factor = 0.75 + sensitivity * 0.05;
-      if (distance(hand[8], hand[5]) <= distance(hand[6], hand[5]) * (1.3 / factor)) {
-        return "";
-      }
-
-      const curled = [[12,10], [16,14], [20,18]].filter(([tipIndex, joint]) =>
-        distance(hand[tipIndex], hand[0]) <
-        distance(hand[joint], hand[0]) * (1.45 / factor)
-      ).length;
-
-      if (curled < 2) return "";
-
-      const dx = tip.x - base.x;
-      const dy = tip.y - base.y;
-      const palmSize = Math.max(1, distance(wrist, palm));
-
-      if (Math.abs(dx) < palmSize * (0.42 / factor)) return "";
-      if (Math.abs(dx) < Math.abs(dy) * 1.2) return "";
-
-      return dx < 0 ? "undo" : "redo";
-    }
-
-    function resetDirection() {
-      gestureDirection = "";
-      gestureStartedAt = 0;
-      gestureLastSeenAt = 0;
-      gestureLatched = false;
-    }
-
-    function openPanel(which) {
-      settingsPanel.classList.toggle("active", which === "settings");
-      toolsPanel.classList.toggle("active", which === "tools");
-      modal.classList.add("open");
-      activeStrokes.clear();
-    }
-
-    function closePanel() {
-      modal.classList.remove("open");
-      settingsPanel.classList.remove("active");
-      toolsPanel.classList.remove("active");
-      activeStrokes.clear();
-    }
-
-    $("settingsButton").addEventListener("click", () => openPanel("settings"));
-    $("toolsButton").addEventListener("click", () => openPanel("tools"));
-
-    document.querySelectorAll("[data-close]").forEach(button => {
-      button.addEventListener("click", closePanel);
-    });
-
-    modal.addEventListener("click", event => {
-      if (event.target === modal) closePanel();
-    });
-
-    document.querySelectorAll("[data-feature]").forEach(button => {
-      button.addEventListener("click", () => {
-        const feature = button.dataset.feature;
-        features[feature] = !features[feature];
-        button.classList.toggle("on", features[feature]);
-        showHint(features[feature] ? "Функция включена" : "Функция выключена");
-      });
-    });
-
-    document.querySelectorAll(".brush-choice").forEach(button => {
-      button.addEventListener("click", () => {
-        selectedBrush = button.dataset.brush;
-        document.querySelectorAll(".brush-choice").forEach(item =>
-          item.classList.toggle("selected", item === button)
-        );
-        showHint(`Кисть: ${button.textContent}`);
-      });
-    });
-
-    $("brushSizePicker").addEventListener("input", event => {
-      brushSize = Number(event.target.value);
-      $("brushSizeValue").textContent = `${brushSize} px`;
-    });
-
-    $("eraserSizePicker").addEventListener("input", event => {
-      eraserSize = Number(event.target.value);
-      $("eraserSizeValue").textContent = `${eraserSize} px`;
-    });
-
-    $("sensitivityPicker").addEventListener("input", event => {
-      sensitivity = Number(event.target.value);
-      $("sensitivityValue").textContent = String(sensitivity);
-      showHint(`Чувствительность: ${sensitivity}`);
-    });
-
-    $("colorPicker").addEventListener("input", event => {
-      drawingColor = event.target.value;
-    });
-
-    $("backgroundColorPicker").addEventListener("input", event => {
-      backgroundColor = event.target.value;
-      backgroundLayer.style.background = backgroundColor;
-      setLayerVisibility();
-      showHint("Фон изменён");
-    });
-
-    $("cameraBackgroundButton").addEventListener("click", () => {
-      backgroundColor = null;
-      backgroundLayer.style.background = "transparent";
-      setLayerVisibility();
-      showHint("Возвращён фон камеры");
-    });
-
-    $("activeLayerPicker").addEventListener("change", event => {
-      activeLayer = event.target.value;
-      showHint(`Активный слой: ${activeLayer === "text" ? "текст" : "рисунок"}`);
-    });
-
-    document.querySelectorAll("[data-layer]").forEach(button => {
-      button.addEventListener("click", () => {
-        const layer = button.dataset.layer;
-        layerVisible[layer] = !layerVisible[layer];
-        button.classList.toggle("on", layerVisible[layer]);
-        setLayerVisibility();
-      });
-    });
-
-    $("rainbowButton").addEventListener("click", event => {
-      features.rainbow = !features.rainbow;
-      event.currentTarget.textContent = features.rainbow
-        ? "🌈 Радужная: вкл."
-        : "🌈 Радужная: выкл.";
-      showHint(features.rainbow ? "Радужная кисть включена" : "Радужная кисть выключена");
-    });
-
-    $("symmetryButton").addEventListener("click", event => {
-      symmetry = !symmetry;
-      event.currentTarget.textContent = symmetry ? "Зеркало: вкл." : "Зеркало: выкл.";
-      event.currentTarget.classList.toggle("selected", symmetry);
-      showHint(symmetry ? "Симметрия включена" : "Симметрия выключена");
-    });
-
-    $("placeTextButton").addEventListener("click", () => {
-      if (!features.text) {
-        showHint("Текст выключен в настройках");
-        return;
-      }
-      if (!$("textInput").value.trim()) {
-        $("textInput").focus();
-        showHint("Сначала введи текст");
-        return;
-      }
-
-      activeLayer = "text";
-      $("activeLayerPicker").value = "text";
-      pendingText = true;
-      closePanel();
-      setStatus("Укажи пальцем место для текста");
-      showHint("Укажи пальцем место для текста");
-    });
-
-    function placeText(point) {
-      const value = $("textInput").value.trim();
-      if (!value) return;
-
-      const action = {
-        type: "text",
-        layer: "text",
-        text: value,
-        x: point.x,
-        y: point.y,
-        size: Math.max(24, brushSize * 4),
-        color: features.rainbow
-          ? `hsl(${(rainbowHue += 7) % 360} 100% 58%)`
-          : drawingColor,
-        mirror: symmetry
-      };
-
-      addAction(action);
-      renderAction(action);
-      pendingText = false;
-      showHint("Текст добавлен");
-      sound("text");
-    }
-
-    $("undoButton").addEventListener("click", undo);
-    $("redoButton").addEventListener("click", redo);
-
-    $("clearAllButton").addEventListener("click", () => {
-      actions = [];
-      redoActions = [];
-      activeStrokes.clear();
-      redrawAll();
-      showHint("Все слои очищены");
-    });
-
-    $("clearLayerButton").addEventListener("click", () => {
-      actions = actions.filter(action => action.layer !== activeLayer);
-      redoActions = [];
-      activeStrokes.clear();
-      redrawAll();
-      showHint("Активный слой очищен");
-    });
-
-    $("saveButton").addEventListener("click", () => {
-      const output = document.createElement("canvas");
-      const dpr = Math.min(devicePixelRatio || 1, 2);
-      output.width = Math.round(innerWidth * dpr);
-      output.height = Math.round(innerHeight * dpr);
-
-      const context = output.getContext("2d");
-      context.scale(dpr, dpr);
-
-      if (layerVisible.background) {
-        context.fillStyle = backgroundColor || "#000";
-        context.fillRect(0, 0, innerWidth, innerHeight);
-      }
-
-      if (layerVisible.drawing) context.drawImage(drawingCanvas, 0, 0, innerWidth, innerHeight);
-      if (layerVisible.text) context.drawImage(textCanvas, 0, 0, innerWidth, innerHeight);
-
-      const link = document.createElement("a");
-      link.download = "neon-risunok.png";
-      link.href = output.toDataURL("image/png");
-      link.click();
-      showHint("PNG сохранён");
-    });
-
-    function detectHeart(hands) {
-      if (hands.length < 2) return null;
-
-      const first = hands[0];
-      const second = hands[1];
-      const a = mapPoint(first[8]);
-      const b = mapPoint(second[8]);
-      const ta = mapPoint(first[4]);
-      const tb = mapPoint(second[4]);
-      const wa = mapPoint(first[0]);
-      const wb = mapPoint(second[0]);
-
-      if (!a || !b || !ta || !tb || !wa || !wb) return null;
-
-      const wrists = distance(wa, wb);
-      if (
-        wrists > 60 &&
-        distance(a, b) < wrists * 0.65 &&
-        distance(ta, tb) < wrists * 0.65
-      ) {
-        return {
-          x: (a.x + b.x + ta.x + tb.x) / 4,
-          y: (a.y + b.y + ta.y + tb.y) / 4,
-          size: Math.max(80, Math.min(240, wrists * 0.8))
-        };
-      }
-
-      return null;
-    }
-
-    function drawHeart(center) {
-      const points = [];
-
-      for (let t = 0; t <= Math.PI * 2; t += 0.07) {
-        const x = 16 * Math.sin(t) ** 3;
-        const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) -
-          2 * Math.cos(3 * t) - Math.cos(4 * t);
-
-        points.push({
-          x: center.x + x * center.size / 34,
-          y: center.y - y * center.size / 40
-        });
-      }
-
-      const action = {
-        type: "stroke",
-        layer: activeLayer,
-        points,
-        width: brushSize,
-        color: drawingColor,
-        brush: selectedBrush,
-        mirror: symmetry
-      };
-
-      addAction(action);
-      renderAction(action);
-      sound("heart");
-      showHint("Сердце нарисовано");
-    }
-
-    function showCinema() {
-      cinemaMeme.classList.add("visible");
-      cinemaMeme.setAttribute("aria-hidden", "false");
-      clearTimeout(cinemaTimer);
-      cinemaTimer = setTimeout(() => {
-        cinemaMeme.classList.remove("visible");
-        cinemaMeme.setAttribute("aria-hidden", "true");
-      }, 3000);
-      showHint("Absolute Cinema");
-    }
-
-    function processFrame() {
-      if (!running) return;
-      requestAnimationFrame(processFrame);
-
-      try {
-        if (!landmarker || video.readyState < 2 || video.currentTime === lastVideoTime) return;
-
-        lastVideoTime = video.currentTime;
-        const now = performance.now();
-        const result = landmarker.detectForVideo(video, now);
-        const hands = smoothHands(result.landmarks || []);
-
-        overlay.clearRect(0, 0, innerWidth, innerHeight);
-        drawSkeleton(hands);
-
-        if (modal.classList.contains("open")) return;
-
-        if (features.menuGesture) {
-          const pose = hands.some(menuPose);
-          menuFrames = pose ? menuFrames + 1 : 0;
-
-          if (menuFrames >= 8 && !menuLatched) {
-            menuLatched = true;
-            openPanel("settings");
-            return;
-          }
-          if (!pose) menuLatched = false;
-        }
-
-        if (features.heart) {
-          const heart = detectHeart(hands);
-
-          if (heart) {
-            if (!heartLatched) drawHeart(heart);
-            heartLatched = true;
-            return;
-          }
-        }
-        heartLatched = false;
-
-        if (features.cinema && hands.length >= 2 && hands.every(openHand)) {
-          cinemaFrames++;
-
-          if (cinemaFrames > 16 && !cinemaLatched) {
-            cinemaLatched = true;
-            showCinema();
-          }
-
-          resetDirection();
-          finishStrokesExcept(new Set());
-          return;
-        }
-
-        cinemaFrames = 0;
-        cinemaLatched = false;
-
-        if (!hands.length) {
-          resetDirection();
-          finishStrokesExcept(new Set());
-          setStatus("Покажи руку в камеру");
-          return;
-        }
-
-        if (features.undoRedo && hands.length === 1) {
-          const direction = directionGesture(hands[0]);
-
-          if (direction) {
-            if (direction !== gestureDirection) {
-              gestureDirection = direction;
-              gestureStartedAt = now;
-              gestureLatched = false;
-            }
-
-            gestureLastSeenAt = now;
-            finishStrokesExcept(new Set());
-
-            if (!gestureLatched && now - gestureStartedAt > 450) {
-              gestureLatched = true;
-              if (direction === "undo") undo();
-              else redo();
-            } else if (!gestureLatched) {
-              setStatus(direction === "undo" ? "Держи палец влево — отмена" : "Держи вправо — возврат");
-            }
-
-            return;
-          }
-
-          if (gestureDirection && now - gestureLastSeenAt < 180) return;
-        }
-
-        resetDirection();
-
-        const activeKeys = new Set();
-        let drawing = false;
-        let erasing = false;
-
-        if (
-          hands.length === 1 &&
-          features.twoFingerDraw &&
-          classifyHand(hands[0]) === "twoDraw"
-        ) {
-          const one = mapPoint(hands[0][8]);
-          const two = mapPoint(hands[0][12]);
-
-          if (one && two) {
-            activeKeys.add("two-a");
-            activeKeys.add("two-b");
-            continueStroke("two-a", one);
-            continueStroke("two-b", two);
-            drawing = true;
-          }
-        } else {
-          hands.forEach((hand, index) => {
-            const mode = classifyHand(hand);
-            const point = mapPoint(hand[8]);
-            if (!point) return;
-
-            if (mode === "draw" && features.draw) {
-              if (pendingText && features.text) {
-                placeText(point);
-                return;
-              }
-
-              const key = `hand-${index}`;
-              activeKeys.add(key);
-              continueStroke(key, point);
-              drawing = true;
-            } else if (mode === "erase" && features.erase) {
-              activeKeys.add("erase");
-              continueErase(point);
-              drawEraserCursor(point);
-              erasing = true;
-            }
-          });
-        }
-
-        finishStrokesExcept(activeKeys);
-
-        if (erasing) setStatus("Стираешь");
-        else if (drawing) setStatus(`Рисуешь · ${selectedBrush}`);
-        else if (pendingText) setStatus("Укажи пальцем место для текста");
-        else setStatus("Покажи жест для рисования");
-      } catch (error) {
-        console.error(error);
-        setStatus(`Ошибка распознавания: ${error.message || error}`);
-        activeStrokes.clear();
-      }
-    }
-
-    // Слушатель назначается сразу, без ожидания загрузки MediaPipe.
-    startButton.addEventListener("click", async () => {
-      if (starting || running) return;
-
-      starting = true;
+  <script>
+    /*
+      Кнопка камеры вызывает эту функцию через onclick.
+      Функция объявлена глобально, а MediaPipe загружается по нажатию.
+    */
+    window.startCamera = async function () {
+      const startButton = document.getElementById("startButton");
+      const status = document.getElementById("status");
+      const video = document.getElementById("camera");
+
+      if (window.cameraStarting || window.cameraRunning) return;
+
+      window.cameraStarting = true;
       startButton.disabled = true;
       startButton.textContent = "Запускаю…";
-      setStatus("Запрашиваю доступ к камере…");
+      status.textContent = "Запрашиваю доступ к камере…";
 
       try {
-        if (!navigator.mediaDevices?.getUserMedia) {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
           throw new Error("Камера требует HTTPS и современный браузер.");
         }
 
-        cameraStream = await navigator.mediaDevices.getUserMedia({
+        window.cameraStream = await navigator.mediaDevices.getUserMedia({
           audio: false,
           video: {
             facingMode: "user",
             width: { ideal: 1280 },
-            height: { ideal: 720 },
-            frameRate: { ideal: 30 }
+            height: { ideal: 720 }
           }
         });
 
-        video.srcObject = cameraStream;
+        video.srcObject = window.cameraStream;
         await video.play();
 
-        setStatus("Загружаю распознавание рук…");
-        const visionModule = await import(
+        status.textContent = "Загружаю распознавание рук…";
+
+        const mp = await import(
           "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs"
         );
 
-        const vision = await visionModule.FilesetResolver.forVisionTasks(
+        const vision = await mp.FilesetResolver.forVisionTasks(
           "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm"
         );
 
@@ -1501,53 +541,1266 @@
         };
 
         try {
-          landmarker = await visionModule.HandLandmarker.createFromOptions(vision, {
+          window.handLandmarker = await mp.HandLandmarker.createFromOptions(vision, {
             ...options,
             baseOptions: { modelAssetPath, delegate: "GPU" }
           });
         } catch (gpuError) {
-          console.warn("GPU недоступен; пробую CPU:", gpuError);
-
-          landmarker = await visionModule.HandLandmarker.createFromOptions(vision, {
+          console.warn("GPU не сработал, пробую CPU:", gpuError);
+          window.handLandmarker = await mp.HandLandmarker.createFromOptions(vision, {
             ...options,
             baseOptions: { modelAssetPath, delegate: "CPU" }
           });
         }
 
-        running = true;
+        window.cameraRunning = true;
         startButton.style.display = "none";
-        setStatus("Камера включена — показывай жест");
-        showHint("Камера включена");
-        requestAnimationFrame(processFrame);
+        status.textContent = "Камера включена — показывай жест";
+        window.showHint?.("Камера включена");
+        window.requestAnimationFrame(window.processFrame);
       } catch (error) {
-        console.error("Ошибка запуска камеры:", error);
+        console.error("Не удалось запустить камеру:", error);
 
-        cameraStream?.getTracks().forEach(track => track.stop());
-        cameraStream = null;
+        window.cameraStream?.getTracks().forEach(track => track.stop());
+        window.cameraStream = null;
         video.srcObject = null;
 
         startButton.disabled = false;
         startButton.textContent = "Попробовать снова";
         startButton.style.display = "block";
-        setStatus(`Не удалось запустить: ${error.message || error}`);
+        status.textContent = `Не удалось запустить: ${error.message || error}`;
       } finally {
-        starting = false;
+        window.cameraStarting = false;
       }
-    });
+    };
 
-    addEventListener("resize", resizeCanvases);
+    (() => {
+      const $ = id => document.getElementById(id);
 
-    addEventListener("beforeunload", () => {
-      running = false;
-      clearTimeout(cinemaTimer);
-      clearTimeout(hintTimer);
-      cameraStream?.getTracks().forEach(track => track.stop());
-      landmarker?.close?.();
-      audioContext?.close?.();
-    });
+      const video = $("camera");
+      const backgroundLayer = $("backgroundLayer");
+      const drawingCanvas = $("drawingCanvas");
+      const textCanvas = $("textCanvas");
+      const overlayCanvas = $("overlayCanvas");
 
-    resizeCanvases();
-    setLayerVisibility();
+      const drawingContext = drawingCanvas.getContext("2d");
+      const textContext = textCanvas.getContext("2d");
+      const overlay = overlayCanvas.getContext("2d");
+
+      const status = $("status");
+      const hintToast = $("hintToast");
+      const modal = $("modal");
+      const settingsPanel = $("settingsPanel");
+      const toolsPanel = $("toolsPanel");
+
+      const features = {
+        draw: true,
+        erase: true,
+        twoFingerDraw: true,
+        heart: true,
+        cinema: true,
+        text: true,
+        undoRedo: true,
+        menuGesture: true,
+        sounds: true,
+        rainbow: false
+      };
+
+      const layerVisible = {
+        drawing: true,
+        text: true,
+        background: true
+      };
+
+      const connections = [
+        [0,1], [1,2], [2,3], [3,4],
+        [0,5], [5,6], [6,7], [7,8],
+        [5,9], [9,10], [10,11], [11,12],
+        [9,13], [13,14], [14,15], [15,16],
+        [13,17], [17,18], [18,19], [19,20],
+        [0,17]
+      ];
+
+      let lastVideoTime = -1;
+      let smoothedHands = [];
+      let drawingColor = "#00cfff";
+      let backgroundColor = null;
+      let brushSize = 7;
+      let eraserSize = 36;
+      let sensitivity = 5;
+      let rainbowHue = 0;
+      let selectedBrush = "neon";
+      let symmetry = false;
+      let activeLayer = "drawing";
+      let pendingText = false;
+
+      let actions = [];
+      let redoActions = [];
+      let activeStrokes = new Map();
+
+      let menuFrames = 0;
+      let menuLatched = false;
+      let cinemaFrames = 0;
+      let cinemaLatched = false;
+      let heartLatched = false;
+      let cinemaTimer = null;
+
+      let gestureDirection = "";
+      let gestureStartedAt = 0;
+      let gestureLastSeenAt = 0;
+      let gestureLatched = false;
+
+      let audioContext = null;
+      let lastSoundTime = 0;
+      let hintTimer = null;
+
+      const maxActions = 80;
+
+      function setStatus(message) {
+        status.textContent = message;
+      }
+
+      window.showHint = function (message) {
+        hintToast.textContent = message;
+        hintToast.classList.add("visible");
+        clearTimeout(hintTimer);
+        hintTimer = setTimeout(() => hintToast.classList.remove("visible"), 1200);
+      };
+
+      function sound(kind) {
+        if (!features.sounds) return;
+
+        try {
+          audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+          if (audioContext.state === "suspended") audioContext.resume();
+
+          const oscillator = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          const now = audioContext.currentTime;
+          const frequencies = {
+            tap: 520, draw: 520, undo: 390, redo: 620,
+            heart: 740, text: 580, erase: 260
+          };
+
+          oscillator.type = "sine";
+          oscillator.frequency.value = frequencies[kind] || 500;
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.exponentialRampToValueAtTime(kind === "draw" ? 0.025 : 0.06, now + 0.015);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
+          oscillator.connect(gain);
+          gain.connect(audioContext.destination);
+          oscillator.start(now);
+          oscillator.stop(now + 0.12);
+        } catch (error) {
+          console.warn("Звук недоступен:", error);
+        }
+      }
+
+      function playDrawSound() {
+        const now = performance.now();
+        if (now - lastSoundTime < 180) return;
+        lastSoundTime = now;
+        sound("draw");
+      }
+
+      function distance(a, b) {
+        return Math.hypot(a.x - b.x, a.y - b.y);
+      }
+
+      function canvasFor(layer) {
+        return layer === "text" ? textContext : drawingContext;
+      }
+
+      function mapPoint(point) {
+        if (!video.videoWidth || !video.videoHeight) return null;
+
+        const scale = Math.max(
+          innerWidth / video.videoWidth,
+          innerHeight / video.videoHeight
+        );
+
+        const shownWidth = video.videoWidth * scale;
+        const shownHeight = video.videoHeight * scale;
+        const cropX = (shownWidth - innerWidth) / 2;
+        const cropY = (shownHeight - innerHeight) / 2;
+
+        return {
+          x: innerWidth - (point.x * shownWidth - cropX),
+          y: point.y * shownHeight - cropY
+        };
+      }
+
+      function updateLayerVisibility() {
+        drawingCanvas.style.visibility = layerVisible.drawing ? "visible" : "hidden";
+        textCanvas.style.visibility = layerVisible.text ? "visible" : "hidden";
+        backgroundLayer.style.visibility = layerVisible.background ? "visible" : "hidden";
+        video.style.visibility = backgroundColor && layerVisible.background ? "hidden" : "visible";
+      }
+
+      function resizeCanvases() {
+        const dpr = Math.min(devicePixelRatio || 1, 2);
+
+        for (const canvas of [drawingCanvas, textCanvas, overlayCanvas]) {
+          canvas.width = Math.round(innerWidth * dpr);
+          canvas.height = Math.round(innerHeight * dpr);
+          canvas.style.width = `${innerWidth}px`;
+          canvas.style.height = `${innerHeight}px`;
+          canvas.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        redrawAll();
+      }
+
+      function fingerUp(hand, tip, joint) {
+        const threshold = 0.02 - sensitivity * 0.0012;
+        return hand[tip].y < hand[joint].y - threshold;
+      }
+
+      function classifyHand(hand) {
+        const index = fingerUp(hand, 8, 6);
+        const middle = fingerUp(hand, 12, 10);
+        const ring = fingerUp(hand, 16, 14);
+        const pinky = fingerUp(hand, 20, 18);
+
+        if (index && !middle && !ring && !pinky) return "draw";
+
+        if (index && middle && !ring && !pinky) {
+          const palm = Math.max(0.001, distance(hand[0], hand[9]));
+          const spread = distance(hand[8], hand[12]) / palm;
+          return spread > 0.72 ? "twoDraw" : "erase";
+        }
+
+        return "";
+      }
+
+      function hasMenuPose(hand) {
+        return fingerUp(hand, 8, 6) &&
+          fingerUp(hand, 12, 10) &&
+          fingerUp(hand, 16, 14) &&
+          !fingerUp(hand, 20, 18);
+      }
+
+      function isOpenHand(hand) {
+        const wrist = hand[0];
+        const fingers = [[8,6], [12,10], [16,14], [20,18]];
+
+        return fingers.filter(([tip, joint]) =>
+          distance(hand[tip], wrist) > distance(hand[joint], wrist) * 1.02
+        ).length >= 4;
+      }
+
+      function smoothHands(hands) {
+        if (!hands.length) {
+          smoothedHands = [];
+          return [];
+        }
+
+        const ordered = [...hands].sort((a, b) => a[0].x - b[0].x);
+
+        if (smoothedHands.length !== ordered.length) {
+          smoothedHands = ordered.map(hand =>
+            hand.map(point => ({ x: point.x, y: point.y, z: point.z || 0 }))
+          );
+          return smoothedHands;
+        }
+
+        const smoothing = 0.72 + (sensitivity / 10) * 0.2;
+
+        for (let h = 0; h < ordered.length; h++) {
+          for (let i = 0; i < ordered[h].length; i++) {
+            const target = ordered[h][i];
+            const current = smoothedHands[h][i];
+            current.x += (target.x - current.x) * smoothing;
+            current.y += (target.y - current.y) * smoothing;
+            current.z += ((target.z || 0) - current.z) * smoothing;
+          }
+        }
+
+        return smoothedHands;
+      }
+
+      function strokeOne(context, a, b, action) {
+        context.save();
+        context.beginPath();
+        context.moveTo(a.x, a.y);
+        context.lineTo(b.x, b.y);
+        context.lineCap = "round";
+        context.lineJoin = "round";
+        context.lineWidth = action.width;
+
+        if (action.brush === "dashed") {
+          context.setLineDash([action.width * 2, action.width * 1.5]);
+          context.strokeStyle = action.color;
+          context.stroke();
+        } else if (action.brush === "marker") {
+          context.globalAlpha = 0.72;
+          context.strokeStyle = action.color;
+          context.stroke();
+        } else if (action.brush === "soft") {
+          context.globalAlpha = 0.5;
+          context.strokeStyle = action.color;
+          context.shadowColor = action.color;
+          context.shadowBlur = action.width * 3;
+          context.stroke();
+        } else {
+          context.strokeStyle = action.color;
+          context.shadowColor = action.color;
+          context.shadowBlur = action.width * 2;
+          context.stroke();
+
+          context.beginPath();
+          context.moveTo(a.x, a.y);
+          context.lineTo(b.x, b.y);
+          context.lineWidth = Math.max(1.5, action.width * 0.22);
+          context.strokeStyle = "#fff";
+          context.shadowBlur = 3;
+          context.stroke();
+        }
+
+        context.restore();
+      }
+
+      function drawActionLine(context, a, b, action) {
+        strokeOne(context, a, b, action);
+
+        if (action.mirror) {
+          strokeOne(
+            context,
+            { x: innerWidth - a.x, y: a.y },
+            { x: innerWidth - b.x, y: b.y },
+            action
+          );
+        }
+      }
+
+      function eraseOne(context, a, b, width) {
+        context.save();
+        context.globalCompositeOperation = "destination-out";
+        context.beginPath();
+        context.moveTo(a.x, a.y);
+        context.lineTo(b.x, b.y);
+        context.lineCap = "round";
+        context.lineWidth = width;
+        context.stroke();
+        context.restore();
+      }
+
+      function eraseActionLine(context, a, b, action) {
+        eraseOne(context, a, b, action.width);
+
+        if (action.mirror) {
+          eraseOne(
+            context,
+            { x: innerWidth - a.x, y: a.y },
+            { x: innerWidth - b.x, y: b.y },
+            action.width
+          );
+        }
+      }
+
+      function renderAction(action) {
+        const context = canvasFor(action.layer);
+
+        if (action.type === "stroke") {
+          if (action.points.length === 1) {
+            drawActionLine(context, action.points[0], action.points[0], action);
+          } else {
+            for (let i = 1; i < action.points.length; i++) {
+              drawActionLine(context, action.points[i - 1], action.points[i], action);
+            }
+          }
+        } else if (action.type === "erase") {
+          if (action.points.length === 1) {
+            eraseActionLine(context, action.points[0], action.points[0], action);
+          } else {
+            for (let i = 1; i < action.points.length; i++) {
+              eraseActionLine(context, action.points[i - 1], action.points[i], action);
+            }
+          }
+        } else if (action.type === "text") {
+          const drawText = x => {
+            context.save();
+            context.font = `bold ${action.size}px Arial`;
+            context.textBaseline = "middle";
+            context.fillStyle = action.color;
+            context.shadowColor = action.color;
+            context.shadowBlur = 8;
+            context.fillText(action.text, x, action.y);
+            context.restore();
+          };
+
+          drawText(action.x);
+          if (action.mirror) drawText(innerWidth - action.x);
+        }
+      }
+
+      function redrawAll() {
+        if (!drawingContext || !textContext) return;
+
+        drawingContext.clearRect(0, 0, innerWidth, innerHeight);
+        textContext.clearRect(0, 0, innerWidth, innerHeight);
+
+        for (const action of actions) renderAction(action);
+      }
+
+      function addAction(action) {
+        actions.push(action);
+        if (actions.length > maxActions) actions.shift();
+        redoActions = [];
+      }
+
+      function currentColor() {
+        if (!features.rainbow) return drawingColor;
+        rainbowHue = (rainbowHue + 7) % 360;
+        return `hsl(${rainbowHue} 100% 58%)`;
+      }
+
+      function beginStroke(key, point) {
+        const action = {
+          type: "stroke",
+          layer: activeLayer,
+          points: [{ ...point }],
+          width: brushSize,
+          color: currentColor(),
+          brush: selectedBrush,
+          mirror: symmetry
+        };
+
+        addAction(action);
+        activeStrokes.set(key, action);
+        drawActionLine(canvasFor(action.layer), point, point, action);
+        playDrawSound();
+      }
+
+      function continueStroke(key, point) {
+        const action = activeStrokes.get(key);
+
+        if (!action) {
+          beginStroke(key, point);
+          return;
+        }
+
+        const previous = action.points[action.points.length - 1];
+        if (distance(previous, point) < 0.8) return;
+
+        action.points.push({ ...point });
+        drawActionLine(canvasFor(action.layer), previous, point, action);
+        playDrawSound();
+      }
+
+      function beginErase(point) {
+        const action = {
+          type: "erase",
+          layer: activeLayer,
+          points: [{ ...point }],
+          width: eraserSize,
+          mirror: symmetry
+        };
+
+        addAction(action);
+        activeStrokes.set("erase", action);
+        eraseActionLine(canvasFor(action.layer), point, point, action);
+      }
+
+      function continueErase(point) {
+        const action = activeStrokes.get("erase");
+
+        if (!action) {
+          beginErase(point);
+          return;
+        }
+
+        const previous = action.points[action.points.length - 1];
+        if (distance(previous, point) < 1) return;
+
+        action.points.push({ ...point });
+        eraseActionLine(canvasFor(action.layer), previous, point, action);
+      }
+
+      function finishStrokesExcept(keys) {
+        for (const key of [...activeStrokes.keys()]) {
+          if (!keys.has(key)) activeStrokes.delete(key);
+        }
+      }
+
+      function undo() {
+        activeStrokes.clear();
+
+        if (!actions.length) {
+          setStatus("Нечего отменять");
+          showHint("Пока нечего отменять");
+          return;
+        }
+
+        redoActions.push(actions.pop());
+        redrawAll();
+        setStatus("Действие отменено");
+        showHint("Отменено");
+        sound("undo");
+      }
+
+      function redo() {
+        activeStrokes.clear();
+
+        if (!redoActions.length) {
+          setStatus("Сначала отмени действие");
+          showHint("Нечего возвращать");
+          return;
+        }
+
+        actions.push(redoActions.pop());
+        redrawAll();
+        setStatus("Действие возвращено");
+        showHint("Возвращено");
+        sound("redo");
+      }
+
+      function drawEraserCursor(point) {
+        function circle(x) {
+          overlay.beginPath();
+          overlay.arc(x, point.y, eraserSize / 2, 0, Math.PI * 2);
+          overlay.fillStyle = "rgba(255, 53, 189, .18)";
+          overlay.fill();
+          overlay.lineWidth = 4;
+          overlay.strokeStyle = "#ff8bd8";
+          overlay.shadowColor = "#ff35bd";
+          overlay.shadowBlur = 15;
+          overlay.stroke();
+        }
+
+        overlay.save();
+        circle(point.x);
+        if (symmetry) circle(innerWidth - point.x);
+        overlay.restore();
+      }
+
+      function drawSkeleton(hands) {
+        overlay.clearRect(0, 0, innerWidth, innerHeight);
+
+        for (const hand of hands) {
+          for (const [a, b] of connections) {
+            const p1 = mapPoint(hand[a]);
+            const p2 = mapPoint(hand[b]);
+            if (!p1 || !p2) continue;
+
+            overlay.beginPath();
+            overlay.moveTo(p1.x, p1.y);
+            overlay.lineTo(p2.x, p2.y);
+            overlay.lineWidth = 3;
+            overlay.lineCap = "round";
+            overlay.strokeStyle = "#00cfff";
+            overlay.shadowColor = "#00cfff";
+            overlay.shadowBlur = 7;
+            overlay.stroke();
+          }
+        }
+
+        overlay.shadowBlur = 0;
+      }
+
+      function directionGesture(hand) {
+        const tip = mapPoint(hand[8]);
+        const base = mapPoint(hand[5]);
+        const pip = mapPoint(hand[6]);
+        const wrist = mapPoint(hand[0]);
+        const palm = mapPoint(hand[9]);
+
+        if (!tip || !base || !pip || !wrist || !palm) return "";
+
+        const factor = 0.75 + sensitivity * 0.05;
+        const indexExtended =
+          distance(hand[8], hand[5]) >
+          distance(hand[6], hand[5]) * (1.3 / factor);
+
+        if (!indexExtended) return "";
+
+        const curled = [[12,10], [16,14], [20,18]].filter(([tipIndex, joint]) =>
+          distance(hand[tipIndex], hand[0]) <
+          distance(hand[joint], hand[0]) * (1.45 / factor)
+        ).length;
+
+        if (curled < 2) return "";
+
+        const dx = tip.x - base.x;
+        const dy = tip.y - base.y;
+        const palmSize = Math.max(1, distance(wrist, palm));
+
+        if (Math.abs(dx) < palmSize * (0.42 / factor)) return "";
+        if (Math.abs(dx) < Math.abs(dy) * 1.2) return "";
+
+        return dx < 0 ? "undo" : "redo";
+      }
+
+      function resetDirection() {
+        gestureDirection = "";
+        gestureStartedAt = 0;
+        gestureLastSeenAt = 0;
+        gestureLatched = false;
+      }
+
+      function openPanel(which) {
+        settingsPanel.classList.toggle("active", which === "settings");
+        toolsPanel.classList.toggle("active", which === "tools");
+        modal.classList.add("open");
+        activeStrokes.clear();
+      }
+
+      function closePanel() {
+        modal.classList.remove("open");
+        settingsPanel.classList.remove("active");
+        toolsPanel.classList.remove("active");
+        activeStrokes.clear();
+      }
+
+      function placeText(point) {
+        const text = $("textInput").value.trim();
+        if (!text || !features.text) return;
+
+        const action = {
+          type: "text",
+          layer: "text",
+          text,
+          x: point.x,
+          y: point.y,
+          size: Math.max(24, brushSize * 4),
+          color: currentColor(),
+          mirror: symmetry
+        };
+
+        addAction(action);
+        renderAction(action);
+        pendingText = false;
+        showHint("Текст добавлен");
+        sound("text");
+      }
+
+      function drawHeart(center) {
+        const points = [];
+
+        for (let t = 0; t <= Math.PI * 2; t += 0.07) {
+          const x = 16 * Math.sin(t) ** 3;
+          const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) -
+            2 * Math.cos(3 * t) - Math.cos(4 * t);
+
+          points.push({
+            x: center.x + x * center.size / 34,
+            y: center.y - y * center.size / 40
+          });
+        }
+
+        const action = {
+          type: "stroke",
+          layer: activeLayer,
+          points,
+          width: brushSize,
+          color: currentColor(),
+          brush: selectedBrush,
+          mirror: symmetry
+        };
+
+        addAction(action);
+        renderAction(action);
+        sound("heart");
+        showHint("Сердце нарисовано");
+      }
+
+      function detectHeart(hands) {
+        if (hands.length < 2) return null;
+
+        const a = hands[0];
+        const b = hands[1];
+        const indexA = mapPoint(a[8]);
+        const indexB = mapPoint(b[8]);
+        const thumbA = mapPoint(a[4]);
+        const thumbB = mapPoint(b[4]);
+        const wristA = mapPoint(a[0]);
+        const wristB = mapPoint(b[0]);
+
+        if (!indexA || !indexB || !thumbA || !thumbB || !wristA || !wristB) {
+          return null;
+        }
+
+        const wristDistance = distance(wristA, wristB);
+
+        if (
+          wristDistance > 60 &&
+          distance(indexA, indexB) < wristDistance * 0.65 &&
+          distance(thumbA, thumbB) < wristDistance * 0.65
+        ) {
+          return {
+            x: (indexA.x + indexB.x + thumbA.x + thumbB.x) / 4,
+            y: (indexA.y + indexB.y + thumbA.y + thumbB.y) / 4,
+            size: Math.max(80, Math.min(240, wristDistance * 0.8))
+          };
+        }
+
+        return null;
+      }
+
+      function showCinema() {
+        $("cinemaMeme").classList.add("visible");
+        $("cinemaMeme").setAttribute("aria-hidden", "false");
+        clearTimeout(cinemaTimer);
+
+        cinemaTimer = setTimeout(() => {
+          $("cinemaMeme").classList.remove("visible");
+          $("cinemaMeme").setAttribute("aria-hidden", "true");
+        }, 3000);
+
+        showHint("Absolute Cinema");
+      }
+
+      function clearLayer(layer) {
+        actions = actions.filter(action => action.layer !== layer);
+        redoActions = [];
+        activeStrokes.clear();
+        redrawAll();
+        showHint("Активный слой очищен");
+      }
+
+      function savePng() {
+        const output = document.createElement("canvas");
+        const dpr = Math.min(devicePixelRatio || 1, 2);
+        output.width = Math.round(innerWidth * dpr);
+        output.height = Math.round(innerHeight * dpr);
+
+        const context = output.getContext("2d");
+        context.scale(dpr, dpr);
+
+        if (layerVisible.background) {
+          context.fillStyle = backgroundColor || "#000";
+          context.fillRect(0, 0, innerWidth, innerHeight);
+        }
+
+        if (layerVisible.drawing) {
+          context.drawImage(drawingCanvas, 0, 0, innerWidth, innerHeight);
+        }
+
+        if (layerVisible.text) {
+          context.drawImage(textCanvas, 0, 0, innerWidth, innerHeight);
+        }
+
+        const link = document.createElement("a");
+        link.download = "neon-risunok.png";
+        link.href = output.toDataURL("image/png");
+        link.click();
+
+        setStatus("PNG сохранён");
+        showHint("Рисунок сохранён");
+      }
+
+      $("settingsButton").addEventListener("click", () => openPanel("settings"));
+      $("toolsButton").addEventListener("click", () => openPanel("tools"));
+      document.querySelectorAll("[data-close]").forEach(button =>
+        button.addEventListener("click", closePanel)
+      );
+
+      modal.addEventListener("click", event => {
+        if (event.target === modal) closePanel();
+      });
+
+      document.querySelectorAll("[data-feature]").forEach(button => {
+        button.addEventListener("click", () => {
+          const feature = button.dataset.feature;
+          features[feature] = !features[feature];
+          button.classList.toggle("on", features[feature]);
+          showHint(features[feature] ? "Функция включена" : "Функция выключена");
+        });
+      });
+
+      document.querySelectorAll(".brush-choice").forEach(button => {
+        button.addEventListener("click", () => {
+          selectedBrush = button.dataset.brush;
+
+          document.querySelectorAll(".brush-choice").forEach(item =>
+            item.classList.toggle("selected", item === button)
+          );
+
+          showHint(`Кисть: ${button.textContent}`);
+        });
+      });
+
+      $("brushSizePicker").addEventListener("input", event => {
+        brushSize = Number(event.target.value);
+        $("brushSizeValue").textContent = `${brushSize} px`;
+      });
+
+      $("eraserSizePicker").addEventListener("input", event => {
+        eraserSize = Number(event.target.value);
+        $("eraserSizeValue").textContent = `${eraserSize} px`;
+      });
+
+      $("sensitivityPicker").addEventListener("input", event => {
+        sensitivity = Number(event.target.value);
+        $("sensitivityValue").textContent = String(sensitivity);
+      });
+
+      $("colorPicker").addEventListener("input", event => {
+        drawingColor = event.target.value;
+      });
+
+      $("backgroundColorPicker").addEventListener("input", event => {
+        backgroundColor = event.target.value;
+        backgroundLayer.style.background = backgroundColor;
+        updateLayerVisibility();
+        showHint("Фон изменён");
+      });
+
+      $("cameraBackgroundButton").addEventListener("click", () => {
+        backgroundColor = null;
+        backgroundLayer.style.background = "transparent";
+        updateLayerVisibility();
+        showHint("Возвращён фон камеры");
+      });
+
+      $("activeLayerPicker").addEventListener("change", event => {
+        activeLayer = event.target.value;
+        showHint(`Активен слой: ${activeLayer === "text" ? "текст" : "рисунок"}`);
+      });
+
+      document.querySelectorAll("[data-layer]").forEach(button => {
+        button.addEventListener("click", () => {
+          const layer = button.dataset.layer;
+          layerVisible[layer] = !layerVisible[layer];
+          button.classList.toggle("on", layerVisible[layer]);
+          updateLayerVisibility();
+        });
+      });
+
+      $("rainbowButton").addEventListener("click", event => {
+        features.rainbow = !features.rainbow;
+        event.currentTarget.textContent = features.rainbow
+          ? "🌈 Радужная: вкл."
+          : "🌈 Радужная: выкл.";
+        showHint(features.rainbow ? "Радужная кисть включена" : "Радужная кисть выключена");
+      });
+
+      $("symmetryButton").addEventListener("click", event => {
+        symmetry = !symmetry;
+        event.currentTarget.textContent = symmetry
+          ? "Зеркало: вкл."
+          : "Зеркало: выкл.";
+        event.currentTarget.classList.toggle("selected", symmetry);
+        showHint(symmetry ? "Симметрия включена" : "Симметрия выключена");
+      });
+
+      $("placeTextButton").addEventListener("click", () => {
+        if (!features.text) {
+          showHint("Текст отключён в настройках");
+          return;
+        }
+
+        if (!$("textInput").value.trim()) {
+          $("textInput").focus();
+          showHint("Сначала введи текст");
+          return;
+        }
+
+        activeLayer = "text";
+        $("activeLayerPicker").value = "text";
+        pendingText = true;
+        closePanel();
+        setStatus("Покажи указательный палец в месте для текста");
+      });
+
+      $("undoButton").addEventListener("click", undo);
+      $("redoButton").addEventListener("click", redo);
+
+      $("clearAllButton").addEventListener("click", () => {
+        actions = [];
+        redoActions = [];
+        activeStrokes.clear();
+        redrawAll();
+        setStatus("Все слои очищены");
+        showHint("Холст очищен");
+      });
+
+      $("clearLayerButton").addEventListener("click", () => clearLayer(activeLayer));
+      $("saveButton").addEventListener("click", savePng);
+
+      function drawEraseCursor(point) {
+        overlay.save();
+
+        const drawCircle = x => {
+          overlay.beginPath();
+          overlay.arc(x, point.y, eraserSize / 2, 0, Math.PI * 2);
+          overlay.fillStyle = "rgba(255, 53, 189, .18)";
+          overlay.fill();
+          overlay.lineWidth = 4;
+          overlay.strokeStyle = "#ff8bd8";
+          overlay.shadowColor = "#ff35bd";
+          overlay.shadowBlur = 15;
+          overlay.stroke();
+        };
+
+        drawCircle(point.x);
+        if (symmetry) drawCircle(innerWidth - point.x);
+        overlay.restore();
+      }
+
+      function drawSkeleton(hands) {
+        overlay.clearRect(0, 0, innerWidth, innerHeight);
+
+        for (const hand of hands) {
+          for (const [a, b] of connections) {
+            const p1 = mapPoint(hand[a]);
+            const p2 = mapPoint(hand[b]);
+            if (!p1 || !p2) continue;
+
+            overlay.beginPath();
+            overlay.moveTo(p1.x, p1.y);
+            overlay.lineTo(p2.x, p2.y);
+            overlay.lineWidth = 3;
+            overlay.lineCap = "round";
+            overlay.strokeStyle = "#00cfff";
+            overlay.shadowColor = "#00cfff";
+            overlay.shadowBlur = 7;
+            overlay.stroke();
+          }
+        }
+
+        overlay.shadowBlur = 0;
+      }
+
+      function directionGesture(hand) {
+        const tip = mapPoint(hand[8]);
+        const base = mapPoint(hand[5]);
+        const pip = mapPoint(hand[6]);
+        const wrist = mapPoint(hand[0]);
+        const palm = mapPoint(hand[9]);
+
+        if (!tip || !base || !pip || !wrist || !palm) return "";
+
+        const factor = 0.75 + sensitivity * 0.05;
+        const indexExtended =
+          distance(hand[8], hand[5]) >
+          distance(hand[6], hand[5]) * (1.3 / factor);
+
+        if (!indexExtended) return "";
+
+        const curled = [[12,10], [16,14], [20,18]].filter(([tipIndex, joint]) =>
+          distance(hand[tipIndex], hand[0]) <
+          distance(hand[joint], hand[0]) * (1.45 / factor)
+        ).length;
+
+        if (curled < 2) return "";
+
+        const dx = tip.x - base.x;
+        const dy = tip.y - base.y;
+        const palmSize = Math.max(1, distance(wrist, palm));
+
+        if (Math.abs(dx) < palmSize * (0.42 / factor)) return "";
+        if (Math.abs(dx) < Math.abs(dy) * 1.2) return "";
+
+        return dx < 0 ? "undo" : "redo";
+      }
+
+      function resetDirection() {
+        gestureDirection = "";
+        gestureStartedAt = 0;
+        gestureLastSeenAt = 0;
+        gestureLatched = false;
+      }
+
+      function processFrame() {
+        if (!window.cameraRunning) return;
+        requestAnimationFrame(processFrame);
+
+        try {
+          const detector = window.handLandmarker;
+
+          if (
+            !detector ||
+            video.readyState < 2 ||
+            video.currentTime === lastVideoTime
+          ) return;
+
+          lastVideoTime = video.currentTime;
+          const now = performance.now();
+          const result = detector.detectForVideo(video, now);
+          const hands = smoothHands(result.landmarks || []);
+
+          drawSkeleton(hands);
+
+          if (modal.classList.contains("open")) return;
+
+          if (features.menuGesture) {
+            const pose = hands.some(hasMenuPose);
+            menuFrames = pose ? menuFrames + 1 : 0;
+
+            if (menuFrames >= 8 && !menuLatched) {
+              menuLatched = true;
+              openPanel("settings");
+              return;
+            }
+            if (!pose) menuLatched = false;
+          }
+
+          if (features.heart) {
+            const heart = detectHeart(hands);
+
+            if (heart) {
+              if (!heartLatched) drawHeart(heart);
+              heartLatched = true;
+              finishStrokesExcept(new Set());
+              return;
+            }
+          }
+          heartLatched = false;
+
+          if (features.cinema && hands.length >= 2 && hands.every(isOpenHand)) {
+            cinemaFrames++;
+
+            if (cinemaFrames > 16 && !cinemaLatched) {
+              cinemaLatched = true;
+              showCinema();
+            }
+
+            resetDirection();
+            finishStrokesExcept(new Set());
+            return;
+          }
+
+          cinemaFrames = 0;
+          cinemaLatched = false;
+
+          if (!hands.length) {
+            resetDirection();
+            finishStrokesExcept(new Set());
+            setStatus("Покажи руку в камеру");
+            return;
+          }
+
+          if (features.undoRedo && hands.length === 1) {
+            const direction = directionGesture(hands[0]);
+
+            if (direction) {
+              if (direction !== gestureDirection) {
+                gestureDirection = direction;
+                gestureStartedAt = now;
+                gestureLatched = false;
+              }
+
+              gestureLastSeenAt = now;
+              finishStrokesExcept(new Set());
+
+              if (!gestureLatched && now - gestureStartedAt > 450) {
+                gestureLatched = true;
+                if (direction === "undo") undo();
+                else redo();
+              } else if (!gestureLatched) {
+                setStatus(direction === "undo"
+                  ? "Держи палец влево — отмена"
+                  : "Держи палец вправо — возврат");
+              }
+
+              return;
+            }
+
+            if (gestureDirection && now - gestureLastSeenAt < 180) return;
+          }
+
+          resetDirection();
+
+          const activeKeys = new Set();
+          let drawing = false;
+          let erasing = false;
+
+          if (
+            hands.length === 1 &&
+            features.twoFingerDraw &&
+            classifyHand(hands[0]) === "twoDraw"
+          ) {
+            const first = mapPoint(hands[0][8]);
+            const second = mapPoint(hands[0][12]);
+
+            if (first && second) {
+              activeKeys.add("two-a");
+              activeKeys.add("two-b");
+              continueStroke("two-a", first);
+              continueStroke("two-b", second);
+              drawing = true;
+            }
+          } else {
+            hands.forEach((hand, index) => {
+              const mode = classifyHand(hand);
+              const point = mapPoint(hand[8]);
+              if (!point) return;
+
+              if (mode === "draw" && features.draw) {
+                if (pendingText && features.text) {
+                  placeText(point);
+                  return;
+                }
+
+                const key = `hand-${index}`;
+                activeKeys.add(key);
+                continueStroke(key, point);
+                drawing = true;
+              } else if (mode === "erase" && features.erase) {
+                activeKeys.add("erase");
+                continueErase(point);
+                drawEraseCursor(point);
+                erasing = true;
+              }
+            });
+          }
+
+          finishStrokesExcept(activeKeys);
+
+          if (erasing) setStatus(`Стираешь · ${eraserSize}px`);
+          else if (drawing) setStatus(`Рисуешь · ${selectedBrush}`);
+          else if (pendingText) setStatus("Укажи пальцем место для текста");
+          else setStatus("Покажи жест для рисования");
+        } catch (error) {
+          console.error("Ошибка обработки видео:", error);
+          setStatus(`Ошибка распознавания: ${error.message || error}`);
+          activeStrokes.clear();
+        }
+      }
+
+      window.processFrame = processFrame;
+
+      $("settingsButton").addEventListener("click", () => openPanel("settings"));
+      $("toolsButton").addEventListener("click", () => openPanel("tools"));
+
+      document.querySelectorAll("[data-close]").forEach(button =>
+        button.addEventListener("click", closePanel)
+      );
+
+      modal.addEventListener("click", event => {
+        if (event.target === modal) closePanel();
+      });
+
+      document.querySelectorAll("[data-feature]").forEach(button => {
+        button.addEventListener("click", () => {
+          const feature = button.dataset.feature;
+          features[feature] = !features[feature];
+          button.classList.toggle("on", features[feature]);
+          showHint(features[feature] ? "Функция включена" : "Функция выключена");
+        });
+      });
+
+      document.querySelectorAll(".brush-choice").forEach(button => {
+        button.addEventListener("click", () => {
+          selectedBrush = button.dataset.brush;
+          document.querySelectorAll(".brush-choice").forEach(item =>
+            item.classList.toggle("selected", item === button)
+          );
+          showHint(`Кисть: ${button.textContent}`);
+        });
+      });
+
+      $("brushSizePicker").addEventListener("input", event => {
+        brushSize = Number(event.target.value);
+        $("brushSizeValue").textContent = `${brushSize} px`;
+      });
+
+      $("eraserSizePicker").addEventListener("input", event => {
+        eraserSize = Number(event.target.value);
+        $("eraserSizeValue").textContent = `${eraserSize} px`;
+      });
+
+      $("sensitivityPicker").addEventListener("input", event => {
+        sensitivity = Number(event.target.value);
+        $("sensitivityValue").textContent = String(sensitivity);
+      });
+
+      $("colorPicker").addEventListener("input", event => {
+        drawingColor = event.target.value;
+      });
+
+      $("backgroundColorPicker").addEventListener("input", event => {
+        backgroundColor = event.target.value;
+        backgroundLayer.style.background = backgroundColor;
+        updateLayerVisibility();
+        showHint("Фон изменён");
+      });
+
+      $("cameraBackgroundButton").addEventListener("click", () => {
+        backgroundColor = null;
+        backgroundLayer.style.background = "transparent";
+        updateLayerVisibility();
+        showHint("Возвращён фон камеры");
+      });
+
+      $("activeLayerPicker").addEventListener("change", event => {
+        activeLayer = event.target.value;
+        showHint(`Активный слой: ${activeLayer === "text" ? "текст" : "рисунок"}`);
+      });
+
+      document.querySelectorAll("[data-layer]").forEach(button => {
+        button.addEventListener("click", () => {
+          const layer = button.dataset.layer;
+          layerVisible[layer] = !layerVisible[layer];
+          button.classList.toggle("on", layerVisible[layer]);
+          updateLayerVisibility();
+        });
+      });
+
+      $("rainbowButton").addEventListener("click", event => {
+        features.rainbow = !features.rainbow;
+        event.currentTarget.textContent = features.rainbow
+          ? "🌈 Радужная: вкл."
+          : "🌈 Радужная: выкл.";
+        showHint(features.rainbow ? "Радужная кисть включена" : "Радужная выключена");
+      });
+
+      $("symmetryButton").addEventListener("click", event => {
+        symmetry = !symmetry;
+        event.currentTarget.textContent = symmetry ? "Зеркало: вкл." : "Зеркало: выкл.";
+        event.currentTarget.classList.toggle("selected", symmetry);
+        showHint(symmetry ? "Симметрия включена" : "Симметрия выключена");
+      });
+
+      $("placeTextButton").addEventListener("click", () => {
+        if (!features.text) {
+          showHint("Текст отключён в настройках");
+          return;
+        }
+
+        if (!$("textInput").value.trim()) {
+          $("textInput").focus();
+          showHint("Сначала введи текст");
+          return;
+        }
+
+        activeLayer = "text";
+        $("activeLayerPicker").value = "text";
+        pendingText = true;
+        closePanel();
+        setStatus("Покажи указательный палец в месте для текста");
+      });
+
+      $("undoButton").addEventListener("click", undo);
+      $("redoButton").addEventListener("click", redo);
+
+      $("clearAllButton").addEventListener("click", () => {
+        actions = [];
+        redoActions = [];
+        activeStrokes.clear();
+        redrawAll();
+        setStatus("Все слои очищены");
+        showHint("Холст очищен");
+      });
+
+      $("clearLayerButton").addEventListener("click", () => clearLayer(activeLayer));
+      $("saveButton").addEventListener("click", savePng);
+
+      addEventListener("resize", resizeCanvases);
+
+      addEventListener("beforeunload", () => {
+        window.cameraRunning = false;
+        clearTimeout(cinemaTimer);
+        clearTimeout(hintTimer);
+        window.cameraStream?.getTracks().forEach(track => track.stop());
+        window.handLandmarker?.close?.();
+        audioContext?.close?.();
+      });
+
+      resizeCanvases();
+      updateLayerVisibility();
+    })();
   </script>
 </body>
 </html>
