@@ -18,8 +18,7 @@
       font-family: Arial, sans-serif;
     }
 
-    #camera,
-    canvas {
+    #camera, canvas {
       position: fixed;
       inset: 0;
       width: 100%;
@@ -33,48 +32,110 @@
 
     canvas { pointer-events: none; }
 
-    #controls {
-      position: fixed;
-      z-index: 5;
-      left: 50%;
-      bottom: max(14px, env(safe-area-inset-bottom));
-      transform: translateX(-50%);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      max-width: calc(100% - 20px);
-      padding: 9px;
-      border: 1px solid #164d68;
-      border-radius: 14px;
-      background: rgb(0 0 0 / 84%);
-      box-shadow: 0 0 18px rgb(0 180 255 / 25%);
-      backdrop-filter: blur(10px);
-    }
-
     button, input { touch-action: manipulation; }
 
     button {
-      min-height: 44px;
-      padding: 0 12px;
+      min-height: 42px;
+      padding: 0 11px;
       border: 1px solid #087fa8;
       border-radius: 10px;
       background: #03131b;
       color: #80eaff;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
-      white-space: nowrap;
     }
 
     button:disabled {
-      opacity: .6;
+      opacity: .55;
       cursor: default;
     }
 
-    #status {
-      max-width: 220px;
-      font-size: 12px;
-      line-height: 1.35;
+    #controls {
+      position: fixed;
+      z-index: 5;
+      left: 50%;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      width: min(920px, calc(100% - 20px));
+      padding: 9px;
+      border: 1px solid #164d68;
+      border-radius: 14px;
+      background: rgb(0 0 0 / 88%);
+      box-shadow: 0 0 18px rgb(0 180 255 / 22%);
+      backdrop-filter: blur(8px);
     }
+
+    #status {
+      max-width: 190px;
+      color: #d8f8ff;
+      font-size: 11px;
+      line-height: 1.3;
+    }
+
+    #colorPicker {
+      width: 43px;
+      height: 42px;
+      padding: 3px;
+      border: 1px solid #087fa8;
+      border-radius: 9px;
+      background: #03131b;
+    }
+
+    #sizePicker {
+      width: 85px;
+      accent-color: #00cfff;
+    }
+
+    #textInput {
+      width: 115px;
+      min-height: 40px;
+      padding: 0 9px;
+      border: 1px solid #087fa8;
+      border-radius: 9px;
+      background: #03131b;
+      color: white;
+      font-size: 13px;
+    }
+
+    #rainbowButton.active {
+      border-color: #fff;
+      background: linear-gradient(110deg, #ff4242, #ffe344, #53e879, #44bfff, #ca70ff);
+      color: #111;
+    }
+
+    #gestureHud {
+      position: fixed;
+      z-index: 4;
+      top: 12px;
+      right: 12px;
+      width: min(230px, 42vw);
+      max-height: calc(100dvh - 115px);
+      overflow-y: auto;
+      padding: 11px;
+      border: 1px solid rgb(0 190 255 / 45%);
+      border-radius: 13px;
+      background: rgb(0 0 0 / 76%);
+      color: #e4faff;
+      font-size: 11px;
+      line-height: 1.4;
+      backdrop-filter: blur(8px);
+      pointer-events: none;
+    }
+
+    #gestureHud strong {
+      display: block;
+      margin-bottom: 7px;
+      color: #80eaff;
+      font-size: 12px;
+    }
+
+    .hud-item { margin: 5px 0; }
+    .hud-item.off { color: #737373; }
 
     #modeMenu {
       position: fixed;
@@ -83,17 +144,18 @@
       display: none;
       place-items: center;
       overflow-y: auto;
-      padding: 18px;
-      background: rgb(0 0 0 / 72%);
+      padding: 16px;
+      background: rgb(0 0 0 / 76%);
       backdrop-filter: blur(5px);
     }
 
     #modeMenu.open { display: grid; }
 
     .menu-card {
-      width: min(100%, 440px);
-      margin: auto;
-      padding: 20px;
+      width: min(100%, 510px);
+      max-height: calc(100dvh - 32px);
+      overflow-y: auto;
+      padding: 18px;
       border: 1px solid #087fa8;
       border-radius: 18px;
       background: #071117;
@@ -101,56 +163,78 @@
     }
 
     .menu-card h2 {
-      margin: 0 0 18px;
+      margin: 0 0 14px;
       color: #9ceeff;
       font-size: 21px;
     }
 
-    .setting {
-      display: grid;
-      grid-template-columns: 90px 1fr;
-      align-items: center;
-      gap: 12px;
-      margin: 14px 0;
-    }
-
-    #colorPicker {
-      width: 64px;
-      height: 44px;
-      padding: 3px;
-      border: 1px solid #087fa8;
-      border-radius: 9px;
-      background: #03131b;
-      cursor: pointer;
-    }
-
-    #sizePicker {
-      width: 100%;
-      accent-color: #00cfff;
-    }
-
-    #sizeValue { color: #9ceeff; }
-
-    .gesture-guide {
-      margin: 18px 0;
-      padding: 12px;
-      border-radius: 12px;
-      background: #0b1c24;
-      color: #d8f8ff;
+    .menu-card h3 {
+      margin: 17px 0 8px;
+      color: #9ceeff;
       font-size: 14px;
-      line-height: 1.65;
+    }
+
+    .toggle-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 10px;
+      border: 1px solid #26343a;
+      border-radius: 10px;
+      background: #0b171c;
+      font-size: 13px;
+    }
+
+    .switch {
+      flex: 0 0 48px;
+      width: 48px;
+      min-height: 28px;
+      padding: 0;
+      border: 1px solid #505050;
+      border-radius: 20px;
+      background: #111;
+      position: relative;
+    }
+
+    .switch::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #777;
+      transition: transform .15s ease, background .15s ease;
+    }
+
+    .switch.on {
+      border-color: #25ce68;
+      background: #13833d;
+    }
+
+    .switch.on::after {
+      transform: translateX(20px);
+      background: #c9ffd9;
     }
 
     .ready-button {
       width: 100%;
-      min-height: 50px;
-      font-size: 16px;
+      min-height: 48px;
+      margin-top: 15px;
+      font-size: 15px;
     }
 
-    .hover-note {
-      margin: 10px 0 0;
+    .menu-note {
+      margin: 8px 0 0;
       color: #a9c3ca;
-      font-size: 12px;
+      font-size: 11px;
       text-align: center;
     }
 
@@ -196,8 +280,6 @@
       font-family: Georgia, serif;
       font-size: clamp(27px, 8vw, 58px);
       font-weight: 900;
-      letter-spacing: .04em;
-      line-height: 1;
       text-align: center;
       text-shadow: 0 2px 5px #000, 0 0 14px #000;
     }
@@ -207,11 +289,14 @@
       to { opacity: 1; }
     }
 
-    @media (max-width: 480px) {
-      #controls { gap: 6px; padding: 8px; }
-      #controls button { padding: 0 9px; font-size: 12px; }
-      #status { max-width: 125px; font-size: 11px; }
-      .menu-card { padding: 16px; }
+    @media (max-width: 560px) {
+      #controls { gap: 5px; padding: 7px; }
+      #controls button { min-height: 39px; padding: 0 8px; font-size: 11px; }
+      #status { max-width: 105px; font-size: 10px; }
+      #sizePicker { width: 58px; }
+      #textInput { width: 85px; }
+      #gestureHud { top: 8px; right: 8px; padding: 8px; font-size: 10px; }
+      .menu-card { padding: 14px; }
     }
   </style>
 </head>
@@ -221,13 +306,22 @@
   <canvas id="drawing"></canvas>
   <canvas id="overlay"></canvas>
 
+  <aside id="gestureHud">
+    <strong>ЖЕСТЫ</strong>
+    <div class="hud-item" data-hud="draw">☝️ Один палец вверх — рисовать</div>
+    <div class="hud-item" data-hud="erase">✌️ Два пальца вместе — стирать</div>
+    <div class="hud-item" data-hud="twoFingerDraw">🖖 Пальцы V — рисовать двумя</div>
+    <div class="hud-item" data-hud="undoRedo">⬅️ Влево — отмена</div>
+    <div class="hud-item" data-hud="undoRedo">➡️ Вправо — вернуть</div>
+    <div class="hud-item" data-hud="heart">❤️ Две руки — сердце</div>
+    <div class="hud-item" data-hud="cinema">🙌 Две раскрытые ладони — мем</div>
+    <div class="hud-item" data-hud="menuGesture">🤟 Три пальца — настройки</div>
+    <div class="hud-item" data-hud="text">🔤 «Текст» → укажи место</div>
+  </aside>
+
   <div id="cinemaMeme" aria-hidden="true">
     <div class="meme-card">
-      <img
-        id="cinemaPhoto"
-        src="./absolute-cinema.jpg"
-        alt="Мем Absolute Cinema"
-      >
+      <img id="cinemaPhoto" src="./absolute-cinema.jpg" alt="Absolute Cinema">
       <div class="meme-caption">ABSOLUTE<br>CINEMA</div>
     </div>
   </div>
@@ -235,39 +329,41 @@
   <div id="controls">
     <button id="startButton" type="button">Включить камеру</button>
     <button id="clearButton" type="button">Очистить</button>
+    <button id="undoButton" type="button" aria-label="Отменить">↶</button>
+    <button id="redoButton" type="button" aria-label="Вернуть">↷</button>
+    <button id="saveButton" type="button">PNG</button>
+    <input id="colorPicker" type="color" value="#00cfff" aria-label="Цвет">
+    <input id="sizePicker" type="range" min="2" max="30" value="7" aria-label="Размер кисти">
+    <input id="textInput" type="text" maxlength="40" placeholder="Текст…">
+    <button id="textButton" type="button">Текст</button>
+    <button id="rainbowButton" type="button">🌈</button>
+    <button id="settingsButton" type="button">Настройки</button>
     <span id="status">Нажми «Включить камеру»</span>
   </div>
 
-  <section id="modeMenu" aria-label="Настройки рисования">
+  <section id="modeMenu" aria-label="Настройки">
     <div class="menu-card">
-      <h2>Настройки рисования</h2>
+      <h2>Настройки жестов и функций</h2>
+      <p style="margin:0;color:#b8dbe3;font-size:12px">
+        Зелёный переключатель — функция включена, чёрный — выключена.
+      </p>
 
-      <div class="setting">
-        <label for="colorPicker">Цвет</label>
-        <input id="colorPicker" type="color" value="#00cfff">
-      </div>
-
-      <div class="setting">
-        <label for="sizePicker">Размер</label>
-        <div>
-          <input id="sizePicker" type="range" min="2" max="30" value="7">
-          <span id="sizeValue">7 px</span>
-        </div>
-      </div>
-
-      <div class="gesture-guide">
-        <strong>Жесты:</strong><br>
-        ☝️ Один указательный палец — рисовать.<br>
-        ✌️ Указательный и средний пальцы — стирать.<br>
-        ❤️ Две руки: указательные пальцы рядом сверху, большие — снизу.<br>
-        🤟 Три сведённых пальца — открыть настройки.<br>
-        🙌 Две раскрытые ладони — показать мем на 3 секунды.
+      <h3>Рисование и эффекты</h3>
+      <div class="toggle-list">
+        <div class="toggle-row"><span>Рисование одним пальцем</span><button class="switch on" data-feature="draw" aria-label="Переключить рисование"></button></div>
+        <div class="toggle-row"><span>Стирание двумя пальцами</span><button class="switch on" data-feature="erase" aria-label="Переключить стирание"></button></div>
+        <div class="toggle-row"><span>Рисование двумя пальцами V</span><button class="switch on" data-feature="twoFingerDraw" aria-label="Переключить рисование двумя пальцами"></button></div>
+        <div class="toggle-row"><span>Сердце двумя руками</span><button class="switch on" data-feature="heart" aria-label="Переключить сердце"></button></div>
+        <div class="toggle-row"><span>Absolute Cinema</span><button class="switch on" data-feature="cinema" aria-label="Переключить мем"></button></div>
+        <div class="toggle-row"><span>Текст на рисунке</span><button class="switch on" data-feature="text" aria-label="Переключить текст"></button></div>
+        <div class="toggle-row"><span>Отмена/возврат жестом</span><button class="switch on" data-feature="undoRedo" aria-label="Переключить отмену"></button></div>
+        <div class="toggle-row"><span>Меню жестом из трёх пальцев</span><button class="switch on" data-feature="menuGesture" aria-label="Переключить жест меню"></button></div>
+        <div class="toggle-row"><span>Звуки</span><button class="switch on" data-feature="sounds" aria-label="Переключить звуки"></button></div>
+        <div class="toggle-row"><span>Радужная кисть</span><button class="switch" data-feature="rainbow" aria-label="Переключить радужную кисть"></button></div>
       </div>
 
       <button class="ready-button" id="readyButton" type="button">Готово</button>
-      <p class="hover-note">
-        Нажми «Готово» на телефоне или наведи на кнопку мышью на компьютере.
-      </p>
+      <p class="menu-note">Меню закрывается нажатием кнопки — наведение мыши ничего не делает.</p>
     </div>
   </section>
 
@@ -290,8 +386,9 @@
     const cinemaPhoto = document.getElementById("cinemaPhoto");
     const colorPicker = document.getElementById("colorPicker");
     const sizePicker = document.getElementById("sizePicker");
-    const sizeValue = document.getElementById("sizeValue");
-    const readyButton = document.getElementById("readyButton");
+    const textInput = document.getElementById("textInput");
+    const textButton = document.getElementById("textButton");
+    const rainbowButton = document.getElementById("rainbowButton");
 
     const CONNECTIONS = [
       [0,1], [1,2], [2,3], [3,4],
@@ -302,36 +399,89 @@
       [0,17]
     ];
 
+    const features = {
+      draw: true,
+      erase: true,
+      twoFingerDraw: true,
+      heart: true,
+      cinema: true,
+      text: true,
+      undoRedo: true,
+      menuGesture: true,
+      sounds: true,
+      rainbow: false
+    };
+
     let landmarker = null;
     let cameraStream = null;
     let running = false;
     let lastVideoTime = -1;
 
     let smoothedHands = [];
-    let previousPoint = null;
-    let previousMode = null;
-
-    let menuGestureFrames = 0;
-    let menuGestureLatched = false;
-
-    let cinemaGestureFrames = 0;
-    let cinemaGestureLatched = false;
-    let cinemaTimer = null;
-
-    let heartWasDetected = false;
     let drawingColor = colorPicker.value;
     let brushSize = Number(sizePicker.value);
+    let rainbowHue = 0;
 
-    cinemaPhoto.addEventListener("error", () => {
-      if (cinemaPhoto.dataset.fallbackUsed === "true") return;
+    let actions = [];
+    let redoActions = [];
+    let activeStrokes = new Map();
+    let pendingText = false;
 
-      cinemaPhoto.dataset.fallbackUsed = "true";
-      cinemaPhoto.src =
-        "https://i.kym-cdn.com/photos/images/newsfeed/002/693/300/817.jpg";
-    });
+    let menuFrames = 0;
+    let menuLatched = false;
+    let cinemaFrames = 0;
+    let cinemaLatched = false;
+    let cinemaTimer = null;
+    let gestureDirection = "";
+    let gestureDirectionFrames = 0;
+    let gestureDirectionLatched = false;
+    let audioContext = null;
+
+    const MAX_ACTIONS = 60;
 
     function setStatus(message) {
       status.textContent = message;
+    }
+
+    function playSound(kind = "tap") {
+      if (!features.sounds) return;
+
+      try {
+        audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+        if (audioContext.state === "suspended") audioContext.resume();
+
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const now = audioContext.currentTime;
+
+        const frequencies = {
+          tap: 520,
+          erase: 260,
+          undo: 390,
+          redo: 620,
+          heart: 740,
+          text: 580
+        };
+
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(frequencies[kind] || 500, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.07, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(now + 0.13);
+      } catch (error) {
+        console.warn("Звук недоступен:", error);
+      }
+    }
+
+    function currentColor() {
+      if (!features.rainbow) return drawingColor;
+      rainbowHue = (rainbowHue + 5) % 360;
+      return `hsl(${rainbowHue} 100% 58%)`;
     }
 
     function resizeCanvases() {
@@ -356,15 +506,11 @@
       }
 
       if (saved.width && saved.height) {
-        draw.drawImage(
-          saved,
-          0, 0, saved.width, saved.height,
-          0, 0, width, height
-        );
+        draw.drawImage(saved, 0, 0, saved.width, saved.height, 0, 0, width, height);
       }
     }
 
-    window.addEventListener("resize", resizeCanvases);
+    addEventListener("resize", resizeCanvases);
     resizeCanvases();
 
     function mapPoint(point) {
@@ -372,11 +518,7 @@
 
       const width = innerWidth;
       const height = innerHeight;
-      const scale = Math.max(
-        width / video.videoWidth,
-        height / video.videoHeight
-      );
-
+      const scale = Math.max(width / video.videoWidth, height / video.videoHeight);
       const shownWidth = video.videoWidth * scale;
       const shownHeight = video.videoHeight * scale;
       const cropX = (shownWidth - width) / 2;
@@ -394,29 +536,20 @@
         return [];
       }
 
-      const orderedHands = [...hands].sort((a, b) => a[0].x - b[0].x);
+      const ordered = [...hands].sort((a, b) => a[0].x - b[0].x);
 
-      if (smoothedHands.length !== orderedHands.length) {
-        smoothedHands = orderedHands.map(hand =>
-          hand.map(point => ({
-            x: point.x,
-            y: point.y,
-            z: point.z || 0
-          }))
+      if (smoothedHands.length !== ordered.length) {
+        smoothedHands = ordered.map(hand =>
+          hand.map(p => ({ x: p.x, y: p.y, z: p.z || 0 }))
         );
         return smoothedHands;
       }
 
-      for (let h = 0; h < orderedHands.length; h++) {
-        for (let i = 0; i < orderedHands[h].length; i++) {
-          const target = orderedHands[h][i];
+      for (let h = 0; h < ordered.length; h++) {
+        for (let i = 0; i < ordered[h].length; i++) {
+          const target = ordered[h][i];
           const current = smoothedHands[h][i];
-          const movement = Math.hypot(
-            target.x - current.x,
-            target.y - current.y
-          );
-
-          // Больший blend уменьшает отставание скелета за рукой.
+          const movement = Math.hypot(target.x - current.x, target.y - current.y);
           const blend = Math.min(0.95, 0.72 + movement * 4);
 
           current.x += (target.x - current.x) * blend;
@@ -432,15 +565,25 @@
       return hand[tip].y < hand[joint].y - 0.015;
     }
 
-    function getDrawingMode(hand) {
+    function distance(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    function palmScale(hand) {
+      return Math.max(0.0001, distance(hand[0], hand[9]));
+    }
+
+    function classifyHand(hand) {
       const index = fingerUp(hand, 8, 6);
       const middle = fingerUp(hand, 12, 10);
       const ring = fingerUp(hand, 16, 14);
       const pinky = fingerUp(hand, 20, 18);
 
-      if (index && !middle && !ring && !pinky) return "draw";
-      if (index && middle && !ring && !pinky) return "erase";
-
+      if (index && !middle && !ring && !pinky) return "one";
+      if (index && middle && !ring && !pinky) {
+        const spread = distance(hand[8], hand[12]) / palmScale(hand);
+        return spread > 0.72 ? "twoDraw" : "erase";
+      }
       return null;
     }
 
@@ -452,138 +595,194 @@
 
       if (!index || !middle || !ring || pinky) return false;
 
-      const distance = (a, b) =>
-        Math.hypot(
-          a.x - b.x,
-          a.y - b.y,
-          (a.z || 0) - (b.z || 0)
-        );
-
-      const palmScale = distance(hand[0], hand[9]);
-      if (palmScale < 0.0001) return false;
-
+      const scale = palmScale(hand);
       return (
-        distance(hand[8], hand[12]) < palmScale * 0.65 &&
-        distance(hand[12], hand[16]) < palmScale * 0.65 &&
-        distance(hand[8], hand[16]) < palmScale * 0.9
+        distance(hand[8], hand[12]) < scale * 0.65 &&
+        distance(hand[12], hand[16]) < scale * 0.65
       );
     }
 
     function isOpenHand(hand) {
-      const distance = (a, b) =>
-        Math.hypot(a.x - b.x, a.y - b.y);
-
       const wrist = hand[0];
-
-      const extendedFingers = [
-        [8, 6], [12, 10], [16, 14], [20, 18]
-      ].filter(([tip, joint]) =>
+      const fingers = [[8,6], [12,10], [16,14], [20,18]];
+      return fingers.filter(([tip, joint]) =>
         distance(hand[tip], wrist) > distance(hand[joint], wrist) * 1.02
-      ).length;
-
-      return extendedFingers >= 4;
+      ).length >= 4;
     }
 
-    function showCinemaMeme() {
-      cinemaMeme.classList.add("visible");
-      cinemaMeme.setAttribute("aria-hidden", "false");
-
-      clearTimeout(cinemaTimer);
-      cinemaTimer = setTimeout(() => {
-        cinemaMeme.classList.remove("visible");
-        cinemaMeme.setAttribute("aria-hidden", "true");
-      }, 3000);
-    }
-
-    function drawNeonLine(context, from, to, width, color = drawingColor) {
+    function drawNeonSegment(context, a, b, width, color) {
       context.save();
       context.beginPath();
-      context.moveTo(from.x, from.y);
-      context.lineTo(to.x, to.y);
+      context.moveTo(a.x, a.y);
+      context.lineTo(b.x, b.y);
       context.lineCap = "round";
       context.lineJoin = "round";
-
       context.strokeStyle = color;
       context.lineWidth = width;
       context.shadowColor = color;
-      context.shadowBlur = Math.max(8, width * 3);
+      context.shadowBlur = Math.max(7, width * 2);
       context.stroke();
 
       context.beginPath();
-      context.moveTo(from.x, from.y);
-      context.lineTo(to.x, to.y);
-      context.strokeStyle = "#e8fcff";
-      context.lineWidth = Math.max(1.5, width * 0.24);
-      context.shadowBlur = 4;
+      context.moveTo(a.x, a.y);
+      context.lineTo(b.x, b.y);
+      context.strokeStyle = "#efffff";
+      context.lineWidth = Math.max(1.4, width * 0.22);
+      context.shadowBlur = 3;
       context.stroke();
-
       context.restore();
     }
 
-    function eraseLine(from, to) {
+    function addAction(action) {
+      actions.push(action);
+      if (actions.length > MAX_ACTIONS) actions.shift();
+      redoActions = [];
+    }
+
+    function beginStroke(key, point, color = currentColor(), width = brushSize) {
+      const action = {
+        type: "stroke",
+        color,
+        width,
+        points: [{ ...point }]
+      };
+
+      addAction(action);
+      activeStrokes.set(key, action);
+
+      drawNeonSegment(draw, point, point, width, color);
+    }
+
+    function continueStroke(key, point) {
+      const action = activeStrokes.get(key);
+
+      if (!action) {
+        beginStroke(key, point);
+        return;
+      }
+
+      const last = action.points[action.points.length - 1];
+      if (distance(last, point) < 0.8) return;
+
+      action.points.push({ ...point });
+      drawNeonSegment(draw, last, point, action.width, action.color);
+    }
+
+    function finishStrokesExcept(keys) {
+      for (const key of [...activeStrokes.keys()]) {
+        if (!keys.has(key)) activeStrokes.delete(key);
+      }
+    }
+
+    function eraseSegment(a, b, width) {
       draw.save();
       draw.globalCompositeOperation = "destination-out";
       draw.beginPath();
-      draw.moveTo(from.x, from.y);
-      draw.lineTo(to.x, to.y);
+      draw.moveTo(a.x, a.y);
+      draw.lineTo(b.x, b.y);
       draw.lineCap = "round";
-      draw.lineJoin = "round";
-      draw.lineWidth = Math.max(24, brushSize * 4);
+      draw.lineWidth = width;
       draw.stroke();
       draw.restore();
     }
 
-    function drawSkeleton(hands) {
-      overlay.clearRect(0, 0, innerWidth, innerHeight);
-
-      for (const hand of hands) {
-        for (const [a, b] of CONNECTIONS) {
-          const first = mapPoint(hand[a]);
-          const second = mapPoint(hand[b]);
-          if (!first || !second) continue;
-
-          overlay.beginPath();
-          overlay.moveTo(first.x, first.y);
-          overlay.lineTo(second.x, second.y);
-          overlay.lineCap = "round";
-          overlay.lineJoin = "round";
-          overlay.strokeStyle = "rgba(0, 205, 255, .95)";
-          overlay.lineWidth = 3;
-          overlay.shadowColor = "#00bfff";
-          overlay.shadowBlur = 9;
-          overlay.stroke();
-        }
-
-        for (const landmark of hand) {
-          const point = mapPoint(landmark);
-          if (!point) continue;
-
-          overlay.beginPath();
-          overlay.arc(point.x, point.y, 3, 0, Math.PI * 2);
-          overlay.fillStyle = "#eaffff";
-          overlay.shadowColor = "#00bfff";
-          overlay.shadowBlur = 9;
-          overlay.fill();
-        }
-      }
-
-      overlay.shadowBlur = 0;
+    function beginErase(point) {
+      const action = { type: "erase", width: Math.max(26, brushSize * 4), points: [{ ...point }] };
+      addAction(action);
+      activeStrokes.set("erase", action);
+      eraseSegment(point, point, action.width);
     }
 
-    function drawCursor(point, mode) {
-      const radius = mode === "erase"
-        ? Math.max(18, brushSize * 2)
-        : Math.max(8, brushSize);
+    function continueErase(point) {
+      const action = activeStrokes.get("erase");
 
-      overlay.save();
-      overlay.beginPath();
-      overlay.arc(point.x, point.y, radius, 0, Math.PI * 2);
-      overlay.lineWidth = 2;
-      overlay.strokeStyle = mode === "erase" ? "#ff72d2" : drawingColor;
-      overlay.shadowColor = mode === "erase" ? "#ff35bd" : drawingColor;
-      overlay.shadowBlur = 16;
-      overlay.stroke();
-      overlay.restore();
+      if (!action) {
+        beginErase(point);
+        return;
+      }
+
+      const last = action.points[action.points.length - 1];
+      if (distance(last, point) < 1) return;
+
+      action.points.push({ ...point });
+      eraseSegment(last, point, action.width);
+    }
+
+    function renderAction(action) {
+      if (action.type === "stroke") {
+        if (action.points.length === 1) {
+          drawNeonSegment(draw, action.points[0], action.points[0], action.width, action.color);
+          return;
+        }
+
+        for (let i = 1; i < action.points.length; i++) {
+          drawNeonSegment(draw, action.points[i - 1], action.points[i], action.width, action.color);
+        }
+      } else if (action.type === "erase") {
+        for (let i = 1; i < action.points.length; i++) {
+          eraseSegment(action.points[i - 1], action.points[i], action.width);
+        }
+        if (action.points.length === 1) {
+          eraseSegment(action.points[0], action.points[0], action.width);
+        }
+      } else if (action.type === "text") {
+        draw.save();
+        draw.font = `bold ${action.size}px Arial`;
+        draw.textBaseline = "middle";
+        draw.shadowColor = action.color;
+        draw.shadowBlur = 8;
+        draw.fillStyle = action.color;
+        draw.fillText(action.text, action.x, action.y);
+        draw.restore();
+      }
+    }
+
+    function redrawAll() {
+      draw.clearRect(0, 0, innerWidth, innerHeight);
+      for (const action of actions) renderAction(action);
+    }
+
+    function undo() {
+      if (!actions.length) return;
+      activeStrokes.clear();
+      redoActions.push(actions.pop());
+      redrawAll();
+      playSound("undo");
+      setStatus("Последнее действие отменено");
+    }
+
+    function redo() {
+      if (!redoActions.length) return;
+      activeStrokes.clear();
+      actions.push(redoActions.pop());
+      redrawAll();
+      playSound("redo");
+      setStatus("Действие возвращено");
+    }
+
+    function placeText(point) {
+      const text = textInput.value.trim();
+      if (!text || !features.text) {
+        setStatus("Сначала введи текст в поле");
+        pendingText = false;
+        return;
+      }
+
+      const action = {
+        type: "text",
+        text,
+        x: point.x,
+        y: point.y,
+        size: Math.max(24, brushSize * 4),
+        color: currentColor()
+      };
+
+      addAction(action);
+      renderAction(action);
+      pendingText = false;
+      textButton.classList.remove("active");
+      playSound("text");
+      setStatus("Текст добавлен");
     }
 
     function detectHeart(hands) {
@@ -598,50 +797,36 @@
 
       const left = ordered[0].hand;
       const right = ordered[1].hand;
+      const li = mapPoint(left[8]);
+      const ri = mapPoint(right[8]);
+      const lt = mapPoint(left[4]);
+      const rt = mapPoint(right[4]);
+      const lw = mapPoint(left[0]);
+      const rw = mapPoint(right[0]);
 
-      const leftIndex = mapPoint(left[8]);
-      const rightIndex = mapPoint(right[8]);
-      const leftThumb = mapPoint(left[4]);
-      const rightThumb = mapPoint(right[4]);
-      const leftWrist = mapPoint(left[0]);
-      const rightWrist = mapPoint(right[0]);
+      if (!li || !ri || !lt || !rt || !lw || !rw) return null;
 
-      if (
-        !leftIndex || !rightIndex ||
-        !leftThumb || !rightThumb ||
-        !leftWrist || !rightWrist
-      ) return null;
+      const wristDistance = distance(lw, rw);
+      const valid =
+        wristDistance > 60 &&
+        distance(li, ri) < wristDistance * 0.55 &&
+        distance(lt, rt) < wristDistance * 0.55 &&
+        (li.y + ri.y) / 2 < (lt.y + rt.y) / 2 + 20;
 
-      const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-      const wrists = distance(leftWrist, rightWrist);
-
-      const isHeart =
-        wrists > 60 &&
-        distance(leftIndex, rightIndex) < wrists * 0.55 &&
-        distance(leftThumb, rightThumb) < wrists * 0.55 &&
-        (leftIndex.y + rightIndex.y) / 2 <
-          (leftThumb.y + rightThumb.y) / 2 + 20;
-
-      if (!isHeart) return null;
+      if (!valid) return null;
 
       return {
-        x: (
-          leftIndex.x + rightIndex.x +
-          leftThumb.x + rightThumb.x
-        ) / 4,
-        y: (
-          leftIndex.y + rightIndex.y +
-          leftThumb.y + rightThumb.y
-        ) / 4,
-        size: Math.max(90, Math.min(260, wrists * 0.8))
+        x: (li.x + ri.x + lt.x + rt.x) / 4,
+        y: (li.y + ri.y + lt.y + rt.y) / 4,
+        size: Math.max(80, Math.min(250, wristDistance * 0.8))
       };
     }
 
-    function drawHeart(center) {
+    function makeHeartPoints(center) {
       const points = [];
       const size = center.size;
 
-      for (let t = 0; t <= Math.PI * 2; t += 0.035) {
+      for (let t = 0; t <= Math.PI * 2; t += 0.06) {
         const x = 16 * Math.sin(t) ** 3;
         const y =
           13 * Math.cos(t) -
@@ -655,41 +840,178 @@
         });
       }
 
-      for (let i = 1; i < points.length; i++) {
-        drawNeonLine(
-          draw,
-          points[i - 1],
-          points[i],
-          Math.max(4, brushSize)
-        );
+      return points;
+    }
+
+    function drawHeart(center) {
+      const action = {
+        type: "stroke",
+        color: currentColor(),
+        width: Math.max(4, brushSize),
+        points: makeHeartPoints(center)
+      };
+
+      addAction(action);
+      renderAction(action);
+      playSound("heart");
+    }
+
+    function showCinema() {
+      cinemaMeme.classList.add("visible");
+      cinemaMeme.setAttribute("aria-hidden", "false");
+      clearTimeout(cinemaTimer);
+
+      cinemaTimer = setTimeout(() => {
+        cinemaMeme.classList.remove("visible");
+        cinemaMeme.setAttribute("aria-hidden", "true");
+      }, 3000);
+
+      playSound("tap");
+    }
+
+    function drawSkeleton(hands) {
+      overlay.clearRect(0, 0, innerWidth, innerHeight);
+
+      for (const hand of hands) {
+        for (const [a, b] of CONNECTIONS) {
+          const p1 = mapPoint(hand[a]);
+          const p2 = mapPoint(hand[b]);
+          if (!p1 || !p2) continue;
+
+          overlay.beginPath();
+          overlay.moveTo(p1.x, p1.y);
+          overlay.lineTo(p2.x, p2.y);
+          overlay.lineCap = "round";
+          overlay.lineJoin = "round";
+          overlay.strokeStyle = "rgba(0,205,255,.9)";
+          overlay.lineWidth = 3;
+          overlay.shadowColor = "#00bfff";
+          overlay.shadowBlur = 7;
+          overlay.stroke();
+        }
+
+        for (const landmark of hand) {
+          const p = mapPoint(landmark);
+          if (!p) continue;
+
+          overlay.beginPath();
+          overlay.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+          overlay.fillStyle = "#eaffff";
+          overlay.shadowColor = "#00bfff";
+          overlay.shadowBlur = 7;
+          overlay.fill();
+        }
       }
+
+      overlay.shadowBlur = 0;
+    }
+
+    function drawCursor(point, color = drawingColor) {
+      overlay.save();
+      overlay.beginPath();
+      overlay.arc(point.x, point.y, Math.max(8, brushSize), 0, Math.PI * 2);
+      overlay.lineWidth = 2;
+      overlay.strokeStyle = color;
+      overlay.shadowColor = color;
+      overlay.shadowBlur = 12;
+      overlay.stroke();
+      overlay.restore();
+    }
+
+    function horizontalPointDirection(hand) {
+      const oneFinger =
+        fingerUp(hand, 8, 6) &&
+        !fingerUp(hand, 12, 10) &&
+        !fingerUp(hand, 16, 14) &&
+        !fingerUp(hand, 20, 18);
+
+      if (!oneFinger) return "";
+
+      const tip = mapPoint(hand[8]);
+      const base = mapPoint(hand[5]);
+      if (!tip || !base) return "";
+
+      const dx = tip.x - base.x;
+      const dy = tip.y - base.y;
+      const scale = Math.max(1, distance(mapPoint(hand[0]), mapPoint(hand[9])));
+
+      if (Math.abs(dx) < scale * 0.9 || Math.abs(dx) < Math.abs(dy) * 1.5) {
+        return "";
+      }
+
+      return dx < 0 ? "undo" : "redo";
+    }
+
+    function updateHud() {
+      document.querySelectorAll("[data-hud]").forEach(item => {
+        const key = item.dataset.hud;
+        item.classList.toggle("off", !features[key]);
+      });
     }
 
     function openMenu() {
       modeMenu.classList.add("open");
-      previousPoint = null;
-      previousMode = null;
-      setStatus("Меню открыто");
+      activeStrokes.clear();
+      setStatus("Настройки открыты");
     }
 
     function closeMenu() {
       modeMenu.classList.remove("open");
-      previousPoint = null;
-      previousMode = null;
-      setStatus("Меню закрыто");
+      activeStrokes.clear();
+      setStatus("Настройки закрыты");
     }
 
-    readyButton.addEventListener("pointerenter", event => {
-      if (
-        event.pointerType === "mouse" &&
-        modeMenu.classList.contains("open")
-      ) {
-        closeMenu();
-      }
+    document.querySelectorAll(".switch").forEach(button => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.feature;
+        features[key] = !features[key];
+        button.classList.toggle("on", features[key]);
+
+        if (key === "rainbow") {
+          rainbowButton.classList.toggle("active", features.rainbow);
+        }
+
+        updateHud();
+        playSound("tap");
+      });
     });
 
-    readyButton.addEventListener("click", () => {
-      if (modeMenu.classList.contains("open")) closeMenu();
+    document.getElementById("settingsButton").addEventListener("click", openMenu);
+    document.getElementById("readyButton").addEventListener("click", closeMenu);
+
+    modeMenu.addEventListener("click", event => {
+      if (event.target === modeMenu) closeMenu();
+    });
+
+    document.getElementById("undoButton").addEventListener("click", undo);
+    document.getElementById("redoButton").addEventListener("click", redo);
+
+    document.getElementById("clearButton").addEventListener("click", () => {
+      actions = [];
+      redoActions = [];
+      activeStrokes.clear();
+      draw.clearRect(0, 0, innerWidth, innerHeight);
+      setStatus("Рисунок очищен");
+      playSound("erase");
+    });
+
+    document.getElementById("saveButton").addEventListener("click", () => {
+      const output = document.createElement("canvas");
+      output.width = drawingCanvas.width;
+      output.height = drawingCanvas.height;
+
+      const ctx = output.getContext("2d");
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, output.width, output.height);
+      ctx.drawImage(drawingCanvas, 0, 0);
+
+      const link = document.createElement("a");
+      link.download = "moy-risunok.png";
+      link.href = output.toDataURL("image/png");
+      link.click();
+
+      setStatus("Рисунок сохранён в PNG");
+      playSound("tap");
     });
 
     colorPicker.addEventListener("input", () => {
@@ -698,14 +1020,34 @@
 
     sizePicker.addEventListener("input", () => {
       brushSize = Number(sizePicker.value);
-      sizeValue.textContent = `${brushSize} px`;
     });
 
-    document.getElementById("clearButton").addEventListener("click", () => {
-      draw.clearRect(0, 0, innerWidth, innerHeight);
-      previousPoint = null;
-      previousMode = null;
-      setStatus("Рисунок очищен");
+    textButton.addEventListener("click", () => {
+      if (!features.text) {
+        setStatus("Функция текста выключена в настройках");
+        return;
+      }
+
+      if (!textInput.value.trim()) {
+        textInput.focus();
+        setStatus("Сначала введи текст");
+        return;
+      }
+
+      pendingText = true;
+      textButton.classList.add("active");
+      setStatus("Покажи указательный палец в месте для текста");
+    });
+
+    rainbowButton.addEventListener("click", () => {
+      features.rainbow = !features.rainbow;
+      rainbowButton.classList.toggle("active", features.rainbow);
+
+      const toggle = document.querySelector('[data-feature="rainbow"]');
+      toggle.classList.toggle("on", features.rainbow);
+
+      updateHud();
+      playSound("tap");
     });
 
     function processFrame() {
@@ -720,111 +1062,156 @@
         ) return;
 
         lastVideoTime = video.currentTime;
-
         const result = landmarker.detectForVideo(video, performance.now());
         const hands = smoothHands(result.landmarks || []);
 
         drawSkeleton(hands);
 
-        const menuPose = hands.some(hasMenuPose);
+        if (modeMenu.classList.contains("open")) return;
 
-        if (menuPose) {
-          menuGestureFrames++;
+        if (features.menuGesture) {
+          const pose = hands.some(hasMenuPose);
+          menuFrames = pose ? menuFrames + 1 : 0;
 
-          if (menuGestureFrames >= 8 && !menuGestureLatched) {
-            menuGestureLatched = true;
+          if (menuFrames >= 8 && !menuLatched) {
+            menuLatched = true;
             openMenu();
+            return;
           }
-        } else {
-          menuGestureFrames = 0;
-          menuGestureLatched = false;
+
+          if (!pose) menuLatched = false;
         }
 
-        if (modeMenu.classList.contains("open")) {
-          setStatus("Меню открыто — нажми «Готово»");
-          return;
-        }
+        if (features.heart) {
+          const heart = detectHeart(hands);
 
-        const heart = detectHeart(hands);
-
-        if (heart) {
-          if (!heartWasDetected) drawHeart(heart);
-
-          heartWasDetected = true;
-          previousPoint = null;
-          previousMode = null;
-          setStatus("Сердце нарисовано");
-          return;
+          if (heart) {
+            if (!heartWasDetected) drawHeart(heart);
+            heartWasDetected = true;
+            activeStrokes.clear();
+            setStatus("Сердце нарисовано");
+            return;
+          }
         }
 
         heartWasDetected = false;
 
-        const cinemaPose =
-          hands.length >= 2 &&
-          isOpenHand(hands[0]) &&
-          isOpenHand(hands[1]);
+        if (features.cinema && hands.length >= 2 && hands.every(isOpenHand)) {
+          cinemaFrames++;
 
-        if (cinemaPose) {
-          cinemaGestureFrames++;
-
-          if (cinemaGestureFrames >= 8 && !cinemaGestureLatched) {
-            cinemaGestureLatched = true;
-            showCinemaMeme();
+          if (cinemaFrames >= 18 && !cinemaLatched) {
+            cinemaLatched = true;
+            showCinema();
           }
 
-          previousPoint = null;
-          previousMode = null;
-          setStatus("ABSOLUTE CINEMA");
+          finishStrokesExcept(new Set());
+          setStatus("Absolute Cinema");
           return;
         }
 
-        cinemaGestureFrames = 0;
-        cinemaGestureLatched = false;
+        cinemaFrames = 0;
+        cinemaLatched = false;
 
         if (!hands.length) {
+          finishStrokesExcept(new Set());
+          gestureDirection = "";
+          gestureDirectionFrames = 0;
+          gestureDirectionLatched = false;
           setStatus("Покажи руку в камеру");
-          previousPoint = null;
-          previousMode = null;
           return;
         }
 
-        const mode = getDrawingMode(hands[0]);
+        if (features.undoRedo && hands.length === 1) {
+          const direction = horizontalPointDirection(hands[0]);
 
-        if (!mode) {
-          setStatus("1 палец — рисовать, 2 — стирать");
-          previousPoint = null;
-          previousMode = null;
-          return;
+          if (direction) {
+            if (direction === gestureDirection) {
+              gestureDirectionFrames++;
+            } else {
+              gestureDirection = direction;
+              gestureDirectionFrames = 1;
+              gestureDirectionLatched = false;
+            }
+
+            finishStrokesExcept(new Set());
+
+            if (gestureDirectionFrames >= 10 && !gestureDirectionLatched) {
+              gestureDirectionLatched = true;
+              direction === "undo" ? undo() : redo();
+            }
+
+            setStatus(direction === "undo" ? "Палец влево: отмена" : "Палец вправо: вернуть");
+            return;
+          }
         }
 
-        const point = mapPoint(hands[0][8]);
-        if (!point) return;
+        gestureDirection = "";
+        gestureDirectionFrames = 0;
+        gestureDirectionLatched = false;
 
-        drawCursor(point, mode);
+        const activeKeys = new Set();
+        let didSomething = false;
 
-        if (mode === "draw") {
-          setStatus("Рисуешь");
+        // Два разведённых пальца V рисуют двумя кончиками.
+        if (hands.length === 1 && features.twoFingerDraw &&
+            classifyHand(hands[0]) === "twoDraw") {
+          const hand = hands[0];
+          const p1 = mapPoint(hand[8]);
+          const p2 = mapPoint(hand[12]);
 
-          if (previousPoint && previousMode === "draw") {
-            drawNeonLine(draw, previousPoint, point, brushSize);
+          if (p1 && p2) {
+            activeKeys.add("v-index");
+            activeKeys.add("v-middle");
+            continueStroke("v-index", p1);
+            continueStroke("v-middle", p2);
+            drawCursor(p1, currentColor());
+            drawCursor(p2, currentColor());
+            didSomething = true;
           }
         } else {
-          setStatus("Стираешь");
+          // Один палец рисует; два близко сведённых пальца стирают.
+          for (let i = 0; i < hands.length; i++) {
+            const hand = hands[i];
+            const mode = classifyHand(hand);
 
-          if (previousPoint && previousMode === "erase") {
-            eraseLine(previousPoint, point);
-          } else {
-            eraseLine(point, point);
+            if (mode === "one" && features.draw) {
+              const point = mapPoint(hand[8]);
+              if (!point) continue;
+
+              if (pendingText && features.text) {
+                placeText(point);
+                continue;
+              }
+
+              const key = `hand-${i}`;
+              activeKeys.add(key);
+              continueStroke(key, point);
+              drawCursor(point, features.rainbow ? currentColor() : drawingColor);
+              didSomething = true;
+            } else if (mode === "erase" && features.erase) {
+              const point = mapPoint(hand[8]);
+              if (!point) continue;
+
+              activeKeys.add("erase");
+              continueErase(point);
+              didSomething = true;
+            }
           }
         }
 
-        previousPoint = { ...point };
-        previousMode = mode;
+        finishStrokesExcept(activeKeys);
+
+        if (didSomething) {
+          setStatus(features.rainbow ? "Рисуешь радужной кистью" : "Рисуешь");
+        } else if (pendingText) {
+          setStatus("Укажи пальцем место для текста");
+        } else {
+          setStatus("☝️ рисовать · ✌️ стирать · 🖖 рисовать двумя");
+        }
       } catch (error) {
-        console.error("Ошибка распознавания:", error);
+        console.error("Ошибка обработки кадра:", error);
         setStatus(`Ошибка: ${error.message || error}`);
-        previousPoint = null;
-        previousMode = null;
+        activeStrokes.clear();
       }
     }
 
@@ -834,7 +1221,7 @@
 
       try {
         if (!navigator.mediaDevices?.getUserMedia) {
-          throw new Error("Открой страницу через HTTPS или localhost.");
+          throw new Error("Открой сайт через HTTPS.");
         }
 
         cameraStream = await navigator.mediaDevices.getUserMedia({
@@ -850,11 +1237,16 @@
         video.srcObject = cameraStream;
         await video.play();
 
-        setStatus("Загружаю распознавание руки…");
+        audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+
+        setStatus("Загружаю распознавание…");
 
         const vision = await FilesetResolver.forVisionTasks(
           "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm"
         );
+
+        const modelAssetPath =
+          "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
 
         const options = {
           runningMode: "VIDEO",
@@ -864,51 +1256,51 @@
           minTrackingConfidence: 0.55
         };
 
-        const modelAssetPath =
-          "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
-
         try {
           landmarker = await HandLandmarker.createFromOptions(vision, {
             ...options,
-            baseOptions: {
-              modelAssetPath,
-              delegate: "GPU"
-            }
+            baseOptions: { modelAssetPath, delegate: "GPU" }
           });
         } catch (gpuError) {
-          console.warn("GPU недоступен, использую CPU:", gpuError);
+          console.warn("GPU недоступен, переключаюсь на CPU:", gpuError);
 
           landmarker = await HandLandmarker.createFromOptions(vision, {
             ...options,
-            baseOptions: {
-              modelAssetPath,
-              delegate: "CPU"
-            }
+            baseOptions: { modelAssetPath, delegate: "CPU" }
           });
         }
 
         running = true;
         startButton.textContent = "Камера включена";
-        setStatus("1 палец — рисовать, 2 — стирать");
+        setStatus("Готово — показывай жест");
         requestAnimationFrame(processFrame);
       } catch (error) {
         console.error(error);
         setStatus(`Не удалось запустить: ${error.message || error}`);
         startButton.disabled = false;
         startButton.textContent = "Попробовать снова";
-
         cameraStream?.getTracks().forEach(track => track.stop());
         cameraStream = null;
         video.srcObject = null;
       }
     });
 
-    window.addEventListener("beforeunload", () => {
+    cinemaPhoto.addEventListener("error", () => {
+      if (cinemaPhoto.dataset.fallbackUsed) return;
+      cinemaPhoto.dataset.fallbackUsed = "true";
+      cinemaPhoto.src =
+        "https://i.kym-cdn.com/photos/images/newsfeed/002/693/300/817.jpg";
+    });
+
+    addEventListener("beforeunload", () => {
       running = false;
       clearTimeout(cinemaTimer);
       cameraStream?.getTracks().forEach(track => track.stop());
       landmarker?.close?.();
+      audioContext?.close?.();
     });
+
+    updateHud();
   </script>
 </body>
 </html>
