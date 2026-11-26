@@ -31,9 +31,7 @@
       transform: scaleX(-1);
     }
 
-    canvas {
-      pointer-events: none;
-    }
+    canvas { pointer-events: none; }
 
     #controls {
       position: fixed;
@@ -53,10 +51,7 @@
       backdrop-filter: blur(10px);
     }
 
-    button,
-    input {
-      touch-action: manipulation;
-    }
+    button, input { touch-action: manipulation; }
 
     button {
       min-height: 44px;
@@ -91,12 +86,9 @@
       padding: 18px;
       background: rgb(0 0 0 / 72%);
       backdrop-filter: blur(5px);
-      touch-action: auto;
     }
 
-    #modeMenu.open {
-      display: grid;
-    }
+    #modeMenu.open { display: grid; }
 
     .menu-card {
       width: min(100%, 440px);
@@ -137,9 +129,7 @@
       accent-color: #00cfff;
     }
 
-    #sizeValue {
-      color: #9ceeff;
-    }
+    #sizeValue { color: #9ceeff; }
 
     .gesture-guide {
       margin: 18px 0;
@@ -173,11 +163,11 @@
       padding: 20px;
       background: rgb(0 0 0 / 90%);
       pointer-events: none;
-      animation: fade-in .2s ease-out;
     }
 
     #cinemaMeme.visible {
       display: grid;
+      animation: fade-in .2s ease-out;
     }
 
     .meme-card {
@@ -212,30 +202,43 @@
       text-shadow: 0 2px 5px #000, 0 0 14px #000;
     }
 
+    #sixSevenText {
+      position: fixed;
+      z-index: 16;
+      top: 28%;
+      left: 50%;
+      display: none;
+      transform: translateX(-50%);
+      color: #fff;
+      font-size: clamp(42px, 12vw, 90px);
+      font-weight: 1000;
+      letter-spacing: .06em;
+      text-align: center;
+      white-space: nowrap;
+      text-shadow: 0 0 12px #00cfff, 0 4px 20px #000;
+      pointer-events: none;
+    }
+
+    #sixSevenText.visible {
+      display: block;
+      animation: six-seven-pop .25s ease-out;
+    }
+
     @keyframes fade-in {
       from { opacity: 0; }
       to { opacity: 1; }
     }
 
+    @keyframes six-seven-pop {
+      from { opacity: 0; transform: translate(-50%, 12px) scale(.85); }
+      to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    }
+
     @media (max-width: 480px) {
-      #controls {
-        gap: 6px;
-        padding: 8px;
-      }
-
-      #controls button {
-        padding: 0 9px;
-        font-size: 12px;
-      }
-
-      #status {
-        max-width: 125px;
-        font-size: 11px;
-      }
-
-      .menu-card {
-        padding: 16px;
-      }
+      #controls { gap: 6px; padding: 8px; }
+      #controls button { padding: 0 9px; font-size: 12px; }
+      #status { max-width: 125px; font-size: 11px; }
+      .menu-card { padding: 16px; }
     }
   </style>
 </head>
@@ -255,6 +258,8 @@
       <div class="meme-caption">ABSOLUTE<br>CINEMA</div>
     </div>
   </div>
+
+  <div id="sixSevenText" aria-hidden="true">СИКС СЕВЕН</div>
 
   <div id="controls">
     <button id="startButton" type="button">Включить камеру</button>
@@ -285,12 +290,11 @@
         ✌️ Указательный и средний пальцы — стирать.<br>
         ❤️ Две руки: указательные пальцы рядом сверху, большие — снизу.<br>
         🤟 Три сведённых пальца — открыть настройки.<br>
-        🙌 Две раскрытые ладони — показать мем на 3 секунды.
+        🙌 Две раскрытые ладони без движения — Absolute Cinema.<br>
+        🔄 Две раскрытые ладони, движущиеся вверх-вниз по очереди — СИКС СЕВЕН.
       </div>
 
-      <button class="ready-button" id="readyButton" type="button">
-        Готово
-      </button>
+      <button class="ready-button" id="readyButton" type="button">Готово</button>
       <p class="hover-note">
         Нажми «Готово» на телефоне или наведи на кнопку мышью на компьютере.
       </p>
@@ -314,6 +318,7 @@
     const modeMenu = document.getElementById("modeMenu");
     const cinemaMeme = document.getElementById("cinemaMeme");
     const cinemaPhoto = document.getElementById("cinemaPhoto");
+    const sixSevenText = document.getElementById("sixSevenText");
     const colorPicker = document.getElementById("colorPicker");
     const sizePicker = document.getElementById("sizePicker");
     const sizeValue = document.getElementById("sizeValue");
@@ -344,14 +349,21 @@
     let cinemaGestureLatched = false;
     let cinemaTimer = null;
 
+    let sixSevenPreviousY = null;
+    let sixSevenDirection = 0;
+    let sixSevenReversals = 0;
+    let sixSevenLastMotionTime = 0;
+    let sixSevenCooldownUntil = 0;
+    let sixSevenTimer = null;
+
     let heartWasDetected = false;
     let drawingColor = colorPicker.value;
     let brushSize = Number(sizePicker.value);
 
-    // Сначала пробуем локальный файл, затем загружаем запасную картинку из сети.
+    // Если локальное фото отсутствует, пробуем загрузить его из сети.
     cinemaPhoto.addEventListener("error", () => {
       if (cinemaPhoto.dataset.fallbackUsed === "true") {
-        cinemaPhoto.alt = "Фото не загрузилось. Проверь файл absolute-cinema.jpg.";
+        cinemaPhoto.alt = "Фото не загрузилось. Проверь absolute-cinema.jpg.";
         return;
       }
 
@@ -374,9 +386,7 @@
       savedDrawing.height = drawingCanvas.height;
 
       if (savedDrawing.width && savedDrawing.height) {
-        savedDrawing
-          .getContext("2d")
-          .drawImage(drawingCanvas, 0, 0);
+        savedDrawing.getContext("2d").drawImage(drawingCanvas, 0, 0);
       }
 
       for (const canvas of [drawingCanvas, overlayCanvas]) {
@@ -470,7 +480,6 @@
 
       if (index && !middle && !ring && !pinky) return "draw";
       if (index && middle && !ring && !pinky) return "erase";
-
       return null;
     }
 
@@ -504,15 +513,92 @@
       const wrist = hand[0];
 
       const extendedFingers = [
-        [8, 6],
-        [12, 10],
-        [16, 14],
-        [20, 18]
+        [8, 6], [12, 10], [16, 14], [20, 18]
       ].filter(([tip, joint]) =>
         distance(hand[tip], wrist) > distance(hand[joint], wrist) * 1.02
       ).length;
 
       return extendedFingers >= 4;
+    }
+
+    function resetSixSevenTracking() {
+      sixSevenPreviousY = null;
+      sixSevenDirection = 0;
+      sixSevenReversals = 0;
+      sixSevenLastMotionTime = 0;
+    }
+
+    function detectSixSevenMotion(hands, now) {
+      if (hands.length < 2 || !hands.every(isOpenHand)) {
+        resetSixSevenTracking();
+        return { active: false, triggered: false };
+      }
+
+      const ordered = [...hands].sort((a, b) => a[0].x - b[0].x);
+
+      // Центр ладони считаем по нескольким точкам, а не по одному запястью.
+      const currentY = ordered.map(hand =>
+        (hand[0].y + hand[5].y + hand[9].y + hand[13].y + hand[17].y) / 5
+      );
+
+      if (!sixSevenPreviousY) {
+        sixSevenPreviousY = currentY;
+        return { active: false, triggered: false };
+      }
+
+      const leftDelta = currentY[0] - sixSevenPreviousY[0];
+      const rightDelta = currentY[1] - sixSevenPreviousY[1];
+      sixSevenPreviousY = currentY;
+
+      // Руки должны двигаться в противоположных направлениях.
+      const movingOpposite =
+        Math.abs(leftDelta) > 0.0018 &&
+        Math.abs(rightDelta) > 0.0018 &&
+        leftDelta * rightDelta < 0;
+
+      if (!movingOpposite) {
+        if (sixSevenLastMotionTime && now - sixSevenLastMotionTime > 1800) {
+          sixSevenReversals = 0;
+          sixSevenDirection = 0;
+        }
+        return { active: false, triggered: false };
+      }
+
+      const direction = Math.sign(leftDelta);
+
+      if (sixSevenLastMotionTime && now - sixSevenLastMotionTime > 1800) {
+        sixSevenReversals = 0;
+        sixSevenDirection = 0;
+      }
+
+      if (sixSevenDirection && direction !== sixSevenDirection) {
+        sixSevenReversals++;
+      }
+
+      sixSevenDirection = direction;
+      sixSevenLastMotionTime = now;
+
+      const triggered =
+        sixSevenReversals >= 2 &&
+        now >= sixSevenCooldownUntil;
+
+      if (triggered) {
+        sixSevenReversals = 0;
+        sixSevenCooldownUntil = now + 4000;
+      }
+
+      return { active: true, triggered };
+    }
+
+    function showSixSeven() {
+      sixSevenText.classList.add("visible");
+      sixSevenText.setAttribute("aria-hidden", "false");
+
+      clearTimeout(sixSevenTimer);
+      sixSevenTimer = setTimeout(() => {
+        sixSevenText.classList.remove("visible");
+        sixSevenText.setAttribute("aria-hidden", "true");
+      }, 3000);
     }
 
     function showCinemaMeme() {
@@ -533,7 +619,6 @@
       context.lineTo(to.x, to.y);
       context.lineCap = "round";
       context.lineJoin = "round";
-
       context.strokeStyle = color;
       context.lineWidth = width;
       context.shadowColor = color;
@@ -547,7 +632,6 @@
       context.lineWidth = Math.max(1.5, width * 0.24);
       context.shadowBlur = 4;
       context.stroke();
-
       context.restore();
     }
 
@@ -638,9 +722,7 @@
       const rightWrist = mapPoint(right[0]);
 
       if (!leftIndex || !rightIndex || !leftThumb || !rightThumb ||
-          !leftWrist || !rightWrist) {
-        return null;
-      }
+          !leftWrist || !rightWrist) return null;
 
       const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
       const wrists = distance(leftWrist, rightWrist);
@@ -655,14 +737,8 @@
       if (!isHeart) return null;
 
       return {
-        x: (
-          leftIndex.x + rightIndex.x +
-          leftThumb.x + rightThumb.x
-        ) / 4,
-        y: (
-          leftIndex.y + rightIndex.y +
-          leftThumb.y + rightThumb.y
-        ) / 4,
+        x: (leftIndex.x + rightIndex.x + leftThumb.x + rightThumb.x) / 4,
+        y: (leftIndex.y + rightIndex.y + leftThumb.y + rightThumb.y) / 4,
         size: Math.max(90, Math.min(260, wrists * 0.8))
       };
     }
@@ -686,12 +762,7 @@
       }
 
       for (let i = 1; i < points.length; i++) {
-        drawNeonLine(
-          draw,
-          points[i - 1],
-          points[i],
-          Math.max(4, brushSize)
-        );
+        drawNeonLine(draw, points[i - 1], points[i], Math.max(4, brushSize));
       }
     }
 
@@ -709,7 +780,6 @@
       setStatus("Меню закрыто");
     }
 
-    // На компьютере закрываем при наведении мышью.
     readyButton.addEventListener("pointerenter", event => {
       if (
         event.pointerType === "mouse" &&
@@ -719,11 +789,8 @@
       }
     });
 
-    // На телефоне закрываем меню нажатием или касанием кнопки.
     readyButton.addEventListener("click", () => {
-      if (modeMenu.classList.contains("open")) {
-        closeMenu();
-      }
+      if (modeMenu.classList.contains("open")) closeMenu();
     });
 
     colorPicker.addEventListener("input", () => {
@@ -751,9 +818,7 @@
           !landmarker ||
           video.readyState < 2 ||
           video.currentTime === lastVideoTime
-        ) {
-          return;
-        }
+        ) return;
 
         lastVideoTime = video.currentTime;
 
@@ -784,10 +849,7 @@
         const heart = detectHeart(hands);
 
         if (heart) {
-          if (!heartWasDetected) {
-            drawHeart(heart);
-          }
-
+          if (!heartWasDetected) drawHeart(heart);
           heartWasDetected = true;
           previousPoint = null;
           previousMode = null;
@@ -797,6 +859,22 @@
 
         heartWasDetected = false;
 
+        const now = performance.now();
+        const sixSeven = detectSixSevenMotion(hands, now);
+
+        if (sixSeven.triggered) showSixSeven();
+
+        if (sixSeven.active) {
+          // Пока руки двигаются в жесте 67, не включаем Absolute Cinema
+          // и не рисуем случайные линии.
+          cinemaGestureFrames = 0;
+          cinemaGestureLatched = false;
+          previousPoint = null;
+          previousMode = null;
+          setStatus("Двигай раскрытыми ладонями вверх-вниз по очереди");
+          return;
+        }
+
         const cinemaPose =
           hands.length >= 2 &&
           isOpenHand(hands[0]) &&
@@ -805,14 +883,21 @@
         if (cinemaPose) {
           cinemaGestureFrames++;
 
-          if (cinemaGestureFrames >= 8 && !cinemaGestureLatched) {
+          // Небольшая пауза отличает неподвижный жест от движения 67.
+          if (cinemaGestureFrames >= 18 && !cinemaGestureLatched) {
             cinemaGestureLatched = true;
             showCinemaMeme();
           }
 
           previousPoint = null;
           previousMode = null;
-          setStatus("ABSOLUTE CINEMA");
+
+          if (!cinemaGestureLatched) {
+            setStatus("Две раскрытые ладони — Absolute Cinema");
+          } else {
+            setStatus("ABSOLUTE CINEMA");
+          }
+
           return;
         } else {
           cinemaGestureFrames = 0;
@@ -842,13 +927,11 @@
 
         if (mode === "draw") {
           setStatus("Рисуешь");
-
           if (previousPoint && previousMode === "draw") {
             drawNeonLine(draw, previousPoint, point, brushSize);
           }
         } else {
           setStatus("Стираешь");
-
           if (previousPoint && previousMode === "erase") {
             eraseLine(previousPoint, point);
           } else {
@@ -908,20 +991,14 @@
         try {
           landmarker = await HandLandmarker.createFromOptions(vision, {
             ...options,
-            baseOptions: {
-              modelAssetPath,
-              delegate: "GPU"
-            }
+            baseOptions: { modelAssetPath, delegate: "GPU" }
           });
         } catch (gpuError) {
           console.warn("GPU недоступен, использую CPU:", gpuError);
 
           landmarker = await HandLandmarker.createFromOptions(vision, {
             ...options,
-            baseOptions: {
-              modelAssetPath,
-              delegate: "CPU"
-            }
+            baseOptions: { modelAssetPath, delegate: "CPU" }
           });
         }
 
@@ -943,6 +1020,7 @@
     window.addEventListener("beforeunload", () => {
       running = false;
       clearTimeout(cinemaTimer);
+      clearTimeout(sixSevenTimer);
       cameraStream?.getTracks().forEach(track => track.stop());
       landmarker?.close?.();
     });
