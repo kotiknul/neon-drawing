@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Неоновое рисование</title>
-
   <style>
     * { box-sizing: border-box; }
 
@@ -34,13 +33,13 @@
     button, input { touch-action: manipulation; }
 
     button {
-      min-height: 42px;
-      padding: 0 11px;
+      min-height: 40px;
+      padding: 0 10px;
       border: 1px solid #087fa8;
       border-radius: 10px;
       background: #03131b;
       color: #80eaff;
-      font-size: 13px;
+      font-size: 12px;
       cursor: pointer;
     }
 
@@ -53,15 +52,15 @@
       position: fixed;
       z-index: 5;
       left: 50%;
-      bottom: max(12px, env(safe-area-inset-bottom));
+      bottom: max(10px, env(safe-area-inset-bottom));
       transform: translateX(-50%);
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
-      gap: 7px;
-      width: min(920px, calc(100% - 20px));
-      padding: 9px;
+      gap: 6px;
+      width: min(980px, calc(100% - 16px));
+      padding: 8px;
       border: 1px solid #164d68;
       border-radius: 14px;
       background: rgb(0 0 0 / 88%);
@@ -70,15 +69,15 @@
     }
 
     #status {
-      max-width: 190px;
+      max-width: 170px;
       color: #d8f8ff;
       font-size: 11px;
       line-height: 1.3;
     }
 
     #colorPicker {
-      width: 43px;
-      height: 42px;
+      width: 42px;
+      height: 40px;
       padding: 3px;
       border: 1px solid #087fa8;
       border-radius: 9px;
@@ -86,63 +85,31 @@
     }
 
     #sizePicker {
-      width: 85px;
+      width: 70px;
       accent-color: #00cfff;
     }
 
     #textInput {
-      width: 115px;
-      min-height: 40px;
-      padding: 0 9px;
+      width: 90px;
+      min-height: 38px;
+      padding: 0 8px;
       border: 1px solid #087fa8;
       border-radius: 9px;
       background: #03131b;
       color: #fff;
-      font-size: 13px;
+      font-size: 12px;
     }
 
     #rainbowButton.active,
     #textButton.active {
       border-color: #fff;
-      background: linear-gradient(
-        110deg,
-        #ff4242,
-        #ffe344,
-        #53e879,
-        #44bfff,
-        #ca70ff
-      );
+      background: linear-gradient(110deg, #ff4242, #ffe344, #53e879, #44bfff, #ca70ff);
       color: #111;
     }
 
-    #gestureHud {
-      position: fixed;
-      z-index: 4;
-      top: 12px;
-      right: 12px;
-      width: min(230px, 42vw);
-      max-height: calc(100dvh - 115px);
-      overflow-y: auto;
-      padding: 11px;
-      border: 1px solid rgb(0 190 255 / 45%);
-      border-radius: 13px;
-      background: rgb(0 0 0 / 76%);
-      color: #e4faff;
-      font-size: 11px;
-      line-height: 1.4;
-      backdrop-filter: blur(8px);
-      pointer-events: none;
+    #settingsButton {
+      white-space: normal;
     }
-
-    #gestureHud strong {
-      display: block;
-      margin-bottom: 7px;
-      color: #80eaff;
-      font-size: 12px;
-    }
-
-    .hud-item { margin: 5px 0; }
-    .hud-item.off { color: #737373; }
 
     #modeMenu {
       position: fixed;
@@ -151,7 +118,7 @@
       display: none;
       place-items: center;
       overflow-y: auto;
-      padding: 16px;
+      padding: 14px;
       background: rgb(0 0 0 / 76%);
       backdrop-filter: blur(5px);
     }
@@ -160,9 +127,9 @@
 
     .menu-card {
       width: min(100%, 510px);
-      max-height: calc(100dvh - 32px);
+      max-height: calc(100dvh - 28px);
       overflow-y: auto;
-      padding: 18px;
+      padding: 17px;
       border: 1px solid #087fa8;
       border-radius: 18px;
       background: #071117;
@@ -170,15 +137,25 @@
     }
 
     .menu-card h2 {
-      margin: 0 0 14px;
+      margin: 0 0 10px;
       color: #9ceeff;
-      font-size: 21px;
+      font-size: 20px;
     }
 
     .menu-card h3 {
-      margin: 17px 0 8px;
+      margin: 16px 0 8px;
       color: #9ceeff;
       font-size: 14px;
+    }
+
+    .gesture-list {
+      margin: 8px 0;
+      padding: 10px 12px;
+      border-radius: 11px;
+      background: #0b1c24;
+      color: #d8f8ff;
+      font-size: 12px;
+      line-height: 1.65;
     }
 
     .toggle-list {
@@ -190,12 +167,12 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 8px 10px;
+      gap: 10px;
+      padding: 7px 9px;
       border: 1px solid #26343a;
       border-radius: 10px;
       background: #0b171c;
-      font-size: 13px;
+      font-size: 12px;
     }
 
     .switch {
@@ -233,13 +210,13 @@
 
     .ready-button {
       width: 100%;
-      min-height: 48px;
-      margin-top: 15px;
-      font-size: 15px;
+      min-height: 46px;
+      margin-top: 13px;
+      font-size: 14px;
     }
 
     .menu-note {
-      margin: 8px 0 0;
+      margin: 7px 0 0;
       color: #a9c3ca;
       font-size: 11px;
       text-align: center;
@@ -297,13 +274,12 @@
     }
 
     @media (max-width: 560px) {
-      #controls { gap: 5px; padding: 7px; }
-      #controls button { min-height: 39px; padding: 0 8px; font-size: 11px; }
-      #status { max-width: 105px; font-size: 10px; }
-      #sizePicker { width: 58px; }
-      #textInput { width: 85px; }
-      #gestureHud { top: 8px; right: 8px; padding: 8px; font-size: 10px; }
-      .menu-card { padding: 14px; }
+      #controls { gap: 5px; padding: 6px; }
+      #controls button { min-height: 37px; padding: 0 7px; font-size: 10px; }
+      #status { max-width: 95px; font-size: 10px; }
+      #sizePicker { width: 54px; }
+      #textInput { width: 72px; }
+      .menu-card { padding: 13px; }
     }
   </style>
 </head>
@@ -313,19 +289,6 @@
   <canvas id="drawing"></canvas>
   <canvas id="overlay"></canvas>
 
-  <aside id="gestureHud">
-    <strong>ЖЕСТЫ</strong>
-    <div class="hud-item" data-hud="draw">☝️ Один палец вверх — рисовать</div>
-    <div class="hud-item" data-hud="erase">✌️ Два пальца вместе — стирать</div>
-    <div class="hud-item" data-hud="twoFingerDraw">🖖 Пальцы V — рисовать двумя</div>
-    <div class="hud-item" data-hud="undoRedo">⬅️ Влево — отмена</div>
-    <div class="hud-item" data-hud="undoRedo">➡️ Вправо — вернуть</div>
-    <div class="hud-item" data-hud="heart">❤️ Две руки — сердце</div>
-    <div class="hud-item" data-hud="cinema">🙌 Две раскрытые ладони — мем</div>
-    <div class="hud-item" data-hud="menuGesture">🤟 Три пальца — настройки</div>
-    <div class="hud-item" data-hud="text">🔤 «Текст» → укажи место</div>
-  </aside>
-
   <div id="cinemaMeme" aria-hidden="true">
     <div class="meme-card">
       <img id="cinemaPhoto" src="./absolute-cinema.jpg" alt="Absolute Cinema">
@@ -334,7 +297,7 @@
   </div>
 
   <div id="controls">
-    <button id="startButton" type="button">Включить камеру</button>
+    <button id="startButton" type="button">Камера</button>
     <button id="clearButton" type="button">Очистить</button>
     <button id="undoButton" type="button" aria-label="Отменить">↶</button>
     <button id="redoButton" type="button" aria-label="Вернуть">↷</button>
@@ -344,18 +307,26 @@
     <input id="textInput" type="text" maxlength="40" placeholder="Текст…">
     <button id="textButton" type="button">Текст</button>
     <button id="rainbowButton" type="button">🌈</button>
-    <button id="settingsButton" type="button">Настройки</button>
-    <span id="status">Нажми «Включить камеру»</span>
+    <button id="settingsButton" type="button">🤟 3 пальца — настройки и список</button>
+    <span id="status">Нажми «Камера»</span>
   </div>
 
-  <section id="modeMenu" aria-label="Настройки">
+  <section id="modeMenu" aria-label="Настройки и список жестов">
     <div class="menu-card">
-      <h2>Настройки жестов и функций</h2>
-      <p style="margin:0;color:#b8dbe3;font-size:12px">
-        Зелёный переключатель — функция включена, чёрный — выключена.
-      </p>
+      <h2>Жесты и настройки</h2>
 
-      <h3>Рисование и эффекты</h3>
+      <div class="gesture-list">
+        ☝️ Один указательный палец вверх — рисовать.<br>
+        ✌️ Указательный и средний близко — стирать.<br>
+        🖖 Указательный и средний разведены буквой V — рисовать двумя пальцами.<br>
+        ⬅️ Указательный горизонтально влево, удержать — отменить.<br>
+        ➡️ Указательный горизонтально вправо, удержать — вернуть отменённое.<br>
+        ❤️ Две руки — нарисовать сердце.<br>
+        🙌 Две раскрытые ладони — показать Absolute Cinema.<br>
+        🤟 Три поднятых пальца — открыть это меню.
+      </div>
+
+      <h3>Включение функций</h3>
       <div class="toggle-list">
         <div class="toggle-row"><span>Рисование одним пальцем</span><button class="switch on" data-feature="draw" aria-label="Переключить рисование"></button></div>
         <div class="toggle-row"><span>Стирание двумя пальцами</span><button class="switch on" data-feature="erase" aria-label="Переключить стирание"></button></div>
@@ -363,14 +334,14 @@
         <div class="toggle-row"><span>Сердце двумя руками</span><button class="switch on" data-feature="heart" aria-label="Переключить сердце"></button></div>
         <div class="toggle-row"><span>Absolute Cinema</span><button class="switch on" data-feature="cinema" aria-label="Переключить мем"></button></div>
         <div class="toggle-row"><span>Текст на рисунке</span><button class="switch on" data-feature="text" aria-label="Переключить текст"></button></div>
-        <div class="toggle-row"><span>Отмена/возврат жестом</span><button class="switch on" data-feature="undoRedo" aria-label="Переключить отмену"></button></div>
-        <div class="toggle-row"><span>Меню жестом из трёх пальцев</span><button class="switch on" data-feature="menuGesture" aria-label="Переключить жест меню"></button></div>
-        <div class="toggle-row"><span>Звуки</span><button class="switch on" data-feature="sounds" aria-label="Переключить звуки"></button></div>
+        <div class="toggle-row"><span>Отмена/возврат жестом</span><button class="switch on" data-feature="undoRedo" aria-label="Переключить отмену и возврат"></button></div>
+        <div class="toggle-row"><span>Открытие меню тремя пальцами</span><button class="switch on" data-feature="menuGesture" aria-label="Переключить жест меню"></button></div>
+        <div class="toggle-row"><span>Звуки, включая звук рисования</span><button class="switch on" data-feature="sounds" aria-label="Переключить звуки"></button></div>
         <div class="toggle-row"><span>Радужная кисть</span><button class="switch" data-feature="rainbow" aria-label="Переключить радужную кисть"></button></div>
       </div>
 
       <button class="ready-button" id="readyButton" type="button">Готово</button>
-      <p class="menu-note">Закрой меню нажатием «Готово» или нажатием по тёмному фону.</p>
+      <p class="menu-note">Зелёный переключатель — включено, чёрный — выключено.</p>
     </div>
   </section>
 
@@ -423,8 +394,8 @@
     let cameraStream = null;
     let running = false;
     let lastVideoTime = -1;
-
     let smoothedHands = [];
+
     let drawingColor = colorPicker.value;
     let brushSize = Number(sizePicker.value);
     let rainbowHue = 0;
@@ -441,16 +412,18 @@
     let cinemaTimer = null;
 
     let gestureDirection = "";
-    let gestureDirectionFrames = 0;
-    let gestureDirectionLatched = false;
+    let gestureStartedAt = 0;
+    let gestureLastSeenAt = 0;
+    let gestureLatched = false;
 
     let audioContext = null;
     let lastDrawingSoundTime = 0;
     let heartWasDetected = false;
 
     const MAX_ACTIONS = 60;
-    const DRAW_SOUND_INTERVAL = 150;
-    const UNDO_REDO_HOLD_FRAMES = 8;
+    const DRAW_SOUND_INTERVAL = 180;
+    const GESTURE_HOLD_MS = 450;
+    const GESTURE_LOST_GRACE_MS = 180;
 
     function setStatus(message) {
       status.textContent = message;
@@ -461,15 +434,11 @@
 
       try {
         audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
-
-        if (audioContext.state === "suspended") {
-          audioContext.resume();
-        }
+        if (audioContext.state === "suspended") audioContext.resume();
 
         const oscillator = audioContext.createOscillator();
         const gain = audioContext.createGain();
         const now = audioContext.currentTime;
-
         const frequencies = {
           tap: 520,
           erase: 260,
@@ -500,16 +469,13 @@
 
     function playDrawingSound() {
       const now = performance.now();
-
       if (now - lastDrawingSoundTime < DRAW_SOUND_INTERVAL) return;
-
       lastDrawingSoundTime = now;
       playSound("draw");
     }
 
     function currentColor() {
       if (!features.rainbow) return drawingColor;
-
       rainbowHue = (rainbowHue + 5) % 360;
       return `hsl(${rainbowHue} 100% 58%)`;
     }
@@ -518,8 +484,8 @@
       const width = innerWidth;
       const height = innerHeight;
       const dpr = Math.min(devicePixelRatio || 1, 2);
-
       const saved = document.createElement("canvas");
+
       saved.width = drawingCanvas.width;
       saved.height = drawingCanvas.height;
 
@@ -536,11 +502,7 @@
       }
 
       if (saved.width && saved.height) {
-        draw.drawImage(
-          saved,
-          0, 0, saved.width, saved.height,
-          0, 0, width, height
-        );
+        draw.drawImage(saved, 0, 0, saved.width, saved.height, 0, 0, width, height);
       }
     }
 
@@ -552,11 +514,7 @@
 
       const width = innerWidth;
       const height = innerHeight;
-      const scale = Math.max(
-        width / video.videoWidth,
-        height / video.videoHeight
-      );
-
+      const scale = Math.max(width / video.videoWidth, height / video.videoHeight);
       const shownWidth = video.videoWidth * scale;
       const shownHeight = video.videoHeight * scale;
       const cropX = (shownWidth - width) / 2;
@@ -578,11 +536,7 @@
 
       if (smoothedHands.length !== ordered.length) {
         smoothedHands = ordered.map(hand =>
-          hand.map(point => ({
-            x: point.x,
-            y: point.y,
-            z: point.z || 0
-          }))
+          hand.map(point => ({ x: point.x, y: point.y, z: point.z || 0 }))
         );
         return smoothedHands;
       }
@@ -591,10 +545,7 @@
         for (let i = 0; i < ordered[h].length; i++) {
           const target = ordered[h][i];
           const current = smoothedHands[h][i];
-          const movement = Math.hypot(
-            target.x - current.x,
-            target.y - current.y
-          );
+          const movement = Math.hypot(target.x - current.x, target.y - current.y);
           const blend = Math.min(0.95, 0.72 + movement * 4);
 
           current.x += (target.x - current.x) * blend;
@@ -643,7 +594,6 @@
       if (!index || !middle || !ring || pinky) return false;
 
       const scale = palmScale(hand);
-
       return (
         distance(hand[8], hand[12]) < scale * 0.65 &&
         distance(hand[12], hand[16]) < scale * 0.65
@@ -652,18 +602,10 @@
 
     function isOpenHand(hand) {
       const wrist = hand[0];
-      const fingers = [
-        [8, 6],
-        [12, 10],
-        [16, 14],
-        [20, 18]
-      ];
-
-      const extendedCount = fingers.filter(([tip, joint]) =>
+      const fingers = [[8,6], [12,10], [16,14], [20,18]];
+      return fingers.filter(([tip, joint]) =>
         distance(hand[tip], wrist) > distance(hand[joint], wrist) * 1.02
-      ).length;
-
-      return extendedCount >= 4;
+      ).length >= 4;
     }
 
     function drawNeonSegment(context, a, b, width, color) {
@@ -691,22 +633,12 @@
 
     function addAction(action) {
       actions.push(action);
-
-      if (actions.length > MAX_ACTIONS) {
-        actions.shift();
-      }
-
+      if (actions.length > MAX_ACTIONS) actions.shift();
       redoActions = [];
     }
 
     function beginStroke(key, point, color = currentColor(), width = brushSize) {
-      const action = {
-        type: "stroke",
-        color,
-        width,
-        points: [{ ...point }]
-      };
-
+      const action = { type: "stroke", color, width, points: [{ ...point }] };
       addAction(action);
       activeStrokes.set(key, action);
       drawNeonSegment(draw, point, point, width, color);
@@ -777,24 +709,12 @@
     function renderAction(action) {
       if (action.type === "stroke") {
         if (action.points.length === 1) {
-          drawNeonSegment(
-            draw,
-            action.points[0],
-            action.points[0],
-            action.width,
-            action.color
-          );
+          drawNeonSegment(draw, action.points[0], action.points[0], action.width, action.color);
           return;
         }
 
         for (let i = 1; i < action.points.length; i++) {
-          drawNeonSegment(
-            draw,
-            action.points[i - 1],
-            action.points[i],
-            action.width,
-            action.color
-          );
+          drawNeonSegment(draw, action.points[i - 1], action.points[i], action.width, action.color);
         }
       } else if (action.type === "erase") {
         if (action.points.length === 1) {
@@ -802,11 +722,7 @@
         }
 
         for (let i = 1; i < action.points.length; i++) {
-          eraseSegment(
-            action.points[i - 1],
-            action.points[i],
-            action.width
-          );
+          eraseSegment(action.points[i - 1], action.points[i], action.width);
         }
       } else if (action.type === "text") {
         draw.save();
@@ -822,19 +738,17 @@
 
     function redrawAll() {
       draw.clearRect(0, 0, innerWidth, innerHeight);
-
-      for (const action of actions) {
-        renderAction(action);
-      }
+      for (const action of actions) renderAction(action);
     }
 
     function undo() {
+      activeStrokes.clear();
+
       if (!actions.length) {
         setStatus("Нечего отменять");
         return;
       }
 
-      activeStrokes.clear();
       redoActions.push(actions.pop());
       redrawAll();
       playSound("undo");
@@ -842,12 +756,13 @@
     }
 
     function redo() {
+      activeStrokes.clear();
+
       if (!redoActions.length) {
-        setStatus("Нечего возвращать");
+        setStatus("Нечего возвращать — сначала отмени действие");
         return;
       }
 
-      activeStrokes.clear();
       actions.push(redoActions.pop());
       redrawAll();
       playSound("redo");
@@ -917,7 +832,7 @@
       };
     }
 
-    function makeHeartPoints(center) {
+    function drawHeart(center) {
       const points = [];
       const size = center.size;
 
@@ -935,15 +850,11 @@
         });
       }
 
-      return points;
-    }
-
-    function drawHeart(center) {
       const action = {
         type: "stroke",
         color: currentColor(),
         width: Math.max(4, brushSize),
-        points: makeHeartPoints(center)
+        points
       };
 
       addAction(action);
@@ -986,11 +897,11 @@
         }
 
         for (const landmark of hand) {
-          const p = mapPoint(landmark);
-          if (!p) continue;
+          const point = mapPoint(landmark);
+          if (!point) continue;
 
           overlay.beginPath();
-          overlay.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+          overlay.arc(point.x, point.y, 2.5, 0, Math.PI * 2);
           overlay.fillStyle = "#eaffff";
           overlay.shadowColor = "#00bfff";
           overlay.shadowBlur = 7;
@@ -1014,12 +925,9 @@
     }
 
     function drawEraseCursor(point) {
-      // Размер круга соответствует ширине ластика и сделан заметным на экране.
-      const eraserWidth = Math.max(36, brushSize * 4);
-      const radius = eraserWidth / 2;
+      const radius = Math.max(36, brushSize * 4) / 2;
 
       overlay.save();
-
       overlay.beginPath();
       overlay.arc(point.x, point.y, radius, 0, Math.PI * 2);
       overlay.fillStyle = "rgba(255, 53, 189, 0.20)";
@@ -1038,7 +946,6 @@
       overlay.fillStyle = "#fff";
       overlay.shadowBlur = 0;
       overlay.fill();
-
       overlay.restore();
     }
 
@@ -1047,47 +954,45 @@
       const base = mapPoint(hand[5]);
       const pip = mapPoint(hand[6]);
       const wrist = mapPoint(hand[0]);
+      const palm = mapPoint(hand[9]);
 
-      if (!tip || !base || !pip || !wrist) return "";
+      if (!tip || !base || !pip || !wrist || !palm) return "";
 
-      // Указательный должен быть вытянут относительно своего основания.
-      const indexExtended =
-        distance(tip, base) > distance(pip, base) * 1.12;
-
+      const indexExtended = distance(tip, base) > distance(pip, base) * 1.12;
       if (!indexExtended) return "";
 
-      // Остальные пальцы должны быть согнуты; проверка допускает небольшую погрешность.
-      const otherFingersCurled =
-        distance(hand[12], hand[0]) < distance(hand[10], hand[0]) * 1.25 &&
-        distance(hand[16], hand[0]) < distance(hand[14], hand[0]) * 1.25 &&
-        distance(hand[20], hand[0]) < distance(hand[18], hand[0]) * 1.25;
+      const curledCount = [
+        [12, 10],
+        [16, 14],
+        [20, 18]
+      ].filter(([fingerTip, joint]) =>
+        distance(hand[fingerTip], hand[0]) <
+        distance(hand[joint], hand[0]) * 1.35
+      ).length;
 
-      if (!otherFingersCurled) return "";
+      if (curledCount < 2) return "";
 
       const dx = tip.x - base.x;
       const dy = tip.y - base.y;
-      const scale = Math.max(1, distance(wrist, mapPoint(hand[9])));
+      const palmSize = Math.max(1, distance(wrist, palm));
 
-      // Требуем отчётливое горизонтальное направление пальца.
-      if (Math.abs(dx) < scale * 0.55 || Math.abs(dx) < Math.abs(dy) * 1.25) {
-        return "";
-      }
+      if (Math.abs(dx) < palmSize * 0.35) return "";
+      if (Math.abs(dx) < Math.abs(dy) * 1.15) return "";
 
-      // Экран зеркальный, поэтому направление соответствует тому, что видит пользователь.
       return dx < 0 ? "undo" : "redo";
     }
 
-    function updateHud() {
-      document.querySelectorAll("[data-hud]").forEach(item => {
-        const key = item.dataset.hud;
-        item.classList.toggle("off", !features[key]);
-      });
+    function resetGestureTracking() {
+      gestureDirection = "";
+      gestureStartedAt = 0;
+      gestureLastSeenAt = 0;
+      gestureLatched = false;
     }
 
     function openMenu() {
       modeMenu.classList.add("open");
       activeStrokes.clear();
-      setStatus("Настройки открыты");
+      setStatus("Настройки и список жестов открыты");
     }
 
     function closeMenu() {
@@ -1106,7 +1011,6 @@
           rainbowButton.classList.toggle("active", features.rainbow);
         }
 
-        updateHud();
         playSound("tap");
       });
     });
@@ -1177,11 +1081,9 @@
     rainbowButton.addEventListener("click", () => {
       features.rainbow = !features.rainbow;
       rainbowButton.classList.toggle("active", features.rainbow);
-
-      const toggle = document.querySelector('[data-feature="rainbow"]');
-      toggle.classList.toggle("on", features.rainbow);
-
-      updateHud();
+      document
+        .querySelector('[data-feature="rainbow"]')
+        .classList.toggle("on", features.rainbow);
       playSound("tap");
     });
 
@@ -1197,8 +1099,8 @@
         ) return;
 
         lastVideoTime = video.currentTime;
-
-        const result = landmarker.detectForVideo(video, performance.now());
+        const now = performance.now();
+        const result = landmarker.detectForVideo(video, now);
         const hands = smoothHands(result.landmarks || []);
 
         drawSkeleton(hands);
@@ -1206,8 +1108,8 @@
         if (modeMenu.classList.contains("open")) return;
 
         if (features.menuGesture) {
-          const pose = hands.some(hasMenuPose);
-          menuFrames = pose ? menuFrames + 1 : 0;
+          const menuPose = hands.some(hasMenuPose);
+          menuFrames = menuPose ? menuFrames + 1 : 0;
 
           if (menuFrames >= 8 && !menuLatched) {
             menuLatched = true;
@@ -1215,7 +1117,7 @@
             return;
           }
 
-          if (!pose) menuLatched = false;
+          if (!menuPose) menuLatched = false;
         }
 
         if (features.heart) {
@@ -1245,6 +1147,7 @@
           }
 
           finishStrokesExcept(new Set());
+          resetGestureTracking();
           setStatus("Absolute Cinema");
           return;
         }
@@ -1254,9 +1157,7 @@
 
         if (!hands.length) {
           finishStrokesExcept(new Set());
-          gestureDirection = "";
-          gestureDirectionFrames = 0;
-          gestureDirectionLatched = false;
+          resetGestureTracking();
           setStatus("Покажи руку в камеру");
           return;
         }
@@ -1265,41 +1166,40 @@
           const direction = horizontalPointDirection(hands[0]);
 
           if (direction) {
-            if (direction === gestureDirection) {
-              gestureDirectionFrames++;
-            } else {
+            if (direction !== gestureDirection) {
               gestureDirection = direction;
-              gestureDirectionFrames = 1;
-              gestureDirectionLatched = false;
+              gestureStartedAt = now;
+              gestureLatched = false;
             }
 
+            gestureLastSeenAt = now;
             finishStrokesExcept(new Set());
 
-            if (
-              gestureDirectionFrames >= UNDO_REDO_HOLD_FRAMES &&
-              !gestureDirectionLatched
-            ) {
-              gestureDirectionLatched = true;
-
-              if (direction === "undo") {
-                undo();
-              } else {
-                redo();
-              }
+            if (!gestureLatched && now - gestureStartedAt >= GESTURE_HOLD_MS) {
+              gestureLatched = true;
+              if (direction === "undo") undo();
+              else redo();
+            } else if (!gestureLatched) {
+              setStatus(
+                direction === "undo"
+                  ? "Держи палец влево — отмена"
+                  : "Держи палец вправо — возврат"
+              );
             }
 
-            setStatus(
-              direction === "undo"
-                ? "Палец влево: отмена"
-                : "Палец вправо: вернуть"
-            );
+            return;
+          }
+
+          if (
+            gestureDirection &&
+            now - gestureLastSeenAt <= GESTURE_LOST_GRACE_MS
+          ) {
+            finishStrokesExcept(new Set());
             return;
           }
         }
 
-        gestureDirection = "";
-        gestureDirectionFrames = 0;
-        gestureDirectionLatched = false;
+        resetGestureTracking();
 
         const activeKeys = new Set();
         let didSomething = false;
@@ -1310,18 +1210,16 @@
           classifyHand(hands[0]) === "twoDraw"
         ) {
           const hand = hands[0];
-          const p1 = mapPoint(hand[8]);
-          const p2 = mapPoint(hand[12]);
+          const first = mapPoint(hand[8]);
+          const second = mapPoint(hand[12]);
 
-          if (p1 && p2) {
+          if (first && second) {
             activeKeys.add("v-index");
             activeKeys.add("v-middle");
-
-            continueStroke("v-index", p1);
-            continueStroke("v-middle", p2);
-
-            drawCursor(p1, drawingColor);
-            drawCursor(p2, drawingColor);
+            continueStroke("v-index", first);
+            continueStroke("v-middle", second);
+            drawCursor(first, drawingColor);
+            drawCursor(second, drawingColor);
             didSomething = true;
           }
         } else {
@@ -1349,8 +1247,6 @@
 
               activeKeys.add("erase");
               continueErase(point);
-
-              // Рисуем курсор ластика после скелета, чтобы круг не затирался.
               drawEraseCursor(point);
               didSomething = true;
             }
@@ -1396,10 +1292,7 @@
         await video.play();
 
         audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
-
-        if (audioContext.state === "suspended") {
-          await audioContext.resume();
-        }
+        if (audioContext.state === "suspended") await audioContext.resume();
 
         setStatus("Загружаю распознавание…");
 
@@ -1424,8 +1317,7 @@
             baseOptions: { modelAssetPath, delegate: "GPU" }
           });
         } catch (gpuError) {
-          console.warn("GPU недоступен, переключаюсь на CPU:", gpuError);
-
+          console.warn("GPU недоступен, использую CPU:", gpuError);
           landmarker = await HandLandmarker.createFromOptions(vision, {
             ...options,
             baseOptions: { modelAssetPath, delegate: "CPU" }
@@ -1438,11 +1330,9 @@
         requestAnimationFrame(processFrame);
       } catch (error) {
         console.error(error);
-
         setStatus(`Не удалось запустить: ${error.message || error}`);
         startButton.disabled = false;
         startButton.textContent = "Попробовать снова";
-
         cameraStream?.getTracks().forEach(track => track.stop());
         cameraStream = null;
         video.srcObject = null;
@@ -1451,7 +1341,6 @@
 
     cinemaPhoto.addEventListener("error", () => {
       if (cinemaPhoto.dataset.fallbackUsed) return;
-
       cinemaPhoto.dataset.fallbackUsed = "true";
       cinemaPhoto.src =
         "https://i.kym-cdn.com/photos/images/newsfeed/002/693/300/817.jpg";
@@ -1464,8 +1353,6 @@
       landmarker?.close?.();
       audioContext?.close?.();
     });
-
-    updateHud();
   </script>
 </body>
 </html>
