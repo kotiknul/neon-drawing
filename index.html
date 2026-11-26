@@ -48,13 +48,18 @@
       padding: 9px;
       border: 1px solid #164d68;
       border-radius: 14px;
-      background: rgb(0 0 0 / 82%);
+      background: rgb(0 0 0 / 84%);
       box-shadow: 0 0 18px rgb(0 180 255 / 25%);
       backdrop-filter: blur(10px);
     }
 
+    button,
+    input {
+      touch-action: manipulation;
+    }
+
     button {
-      min-height: 42px;
+      min-height: 44px;
       padding: 0 12px;
       border: 1px solid #087fa8;
       border-radius: 10px;
@@ -82,9 +87,11 @@
       inset: 0;
       display: none;
       place-items: center;
+      overflow-y: auto;
       padding: 18px;
-      background: rgb(0 0 0 / 68%);
+      background: rgb(0 0 0 / 72%);
       backdrop-filter: blur(5px);
+      touch-action: auto;
     }
 
     #modeMenu.open {
@@ -93,6 +100,7 @@
 
     .menu-card {
       width: min(100%, 440px);
+      margin: auto;
       padding: 20px;
       border: 1px solid #087fa8;
       border-radius: 18px;
@@ -115,8 +123,8 @@
     }
 
     #colorPicker {
-      width: 56px;
-      height: 42px;
+      width: 64px;
+      height: 44px;
       padding: 3px;
       border: 1px solid #087fa8;
       border-radius: 9px;
@@ -145,13 +153,13 @@
 
     .ready-button {
       width: 100%;
-      min-height: 48px;
+      min-height: 50px;
       font-size: 16px;
     }
 
     .hover-note {
       margin: 10px 0 0;
-      color: #88aab4;
+      color: #a9c3ca;
       font-size: 12px;
       text-align: center;
     }
@@ -163,7 +171,7 @@
       display: none;
       place-items: center;
       padding: 20px;
-      background: rgb(0 0 0 / 88%);
+      background: rgb(0 0 0 / 90%);
       pointer-events: none;
       animation: fade-in .2s ease-out;
     }
@@ -221,7 +229,7 @@
       }
 
       #status {
-        max-width: 130px;
+        max-width: 125px;
         font-size: 11px;
       }
 
@@ -249,8 +257,8 @@
   </div>
 
   <div id="controls">
-    <button id="startButton">Включить камеру</button>
-    <button id="clearButton">Очистить</button>
+    <button id="startButton" type="button">Включить камеру</button>
+    <button id="clearButton" type="button">Очистить</button>
     <span id="status">Нажми «Включить камеру»</span>
   </div>
 
@@ -280,8 +288,12 @@
         🙌 Две раскрытые ладони — показать мем на 3 секунды.
       </div>
 
-      <button class="ready-button" id="readyButton">Готово</button>
-      <p class="hover-note">Наведи мышь на «Готово», чтобы закрыть меню.</p>
+      <button class="ready-button" id="readyButton" type="button">
+        Готово
+      </button>
+      <p class="hover-note">
+        Нажми «Готово» на телефоне или наведи на кнопку мышью на компьютере.
+      </p>
     </div>
   </section>
 
@@ -296,6 +308,7 @@
     const overlayCanvas = document.getElementById("overlay");
     const draw = drawingCanvas.getContext("2d");
     const overlay = overlayCanvas.getContext("2d");
+
     const status = document.getElementById("status");
     const startButton = document.getElementById("startButton");
     const modeMenu = document.getElementById("modeMenu");
@@ -324,7 +337,6 @@
     let previousPoint = null;
     let previousMode = null;
 
-    let menuOpen = false;
     let menuGestureFrames = 0;
     let menuGestureLatched = false;
 
@@ -336,9 +348,12 @@
     let drawingColor = colorPicker.value;
     let brushSize = Number(sizePicker.value);
 
-    // Если локального фото нет, пробуем загрузить изображение из интернета.
+    // Сначала пробуем локальный файл, затем загружаем запасную картинку из сети.
     cinemaPhoto.addEventListener("error", () => {
-      if (cinemaPhoto.dataset.fallbackUsed) return;
+      if (cinemaPhoto.dataset.fallbackUsed === "true") {
+        cinemaPhoto.alt = "Фото не загрузилось. Проверь файл absolute-cinema.jpg.";
+        return;
+      }
 
       cinemaPhoto.dataset.fallbackUsed = "true";
       cinemaPhoto.src =
@@ -354,12 +369,14 @@
       const height = innerHeight;
       const dpr = Math.min(devicePixelRatio || 1, 2);
 
-      const saved = document.createElement("canvas");
-      saved.width = drawingCanvas.width;
-      saved.height = drawingCanvas.height;
+      const savedDrawing = document.createElement("canvas");
+      savedDrawing.width = drawingCanvas.width;
+      savedDrawing.height = drawingCanvas.height;
 
-      if (saved.width && saved.height) {
-        saved.getContext("2d").drawImage(drawingCanvas, 0, 0);
+      if (savedDrawing.width && savedDrawing.height) {
+        savedDrawing
+          .getContext("2d")
+          .drawImage(drawingCanvas, 0, 0);
       }
 
       for (const canvas of [drawingCanvas, overlayCanvas]) {
@@ -370,16 +387,16 @@
         canvas.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0);
       }
 
-      if (saved.width && saved.height) {
+      if (savedDrawing.width && savedDrawing.height) {
         draw.drawImage(
-          saved,
-          0, 0, saved.width, saved.height,
+          savedDrawing,
+          0, 0, savedDrawing.width, savedDrawing.height,
           0, 0, width, height
         );
       }
     }
 
-    addEventListener("resize", resizeCanvases);
+    window.addEventListener("resize", resizeCanvases);
     resizeCanvases();
 
     function mapPoint(point) {
@@ -409,10 +426,10 @@
         return [];
       }
 
-      const ordered = [...hands].sort((a, b) => a[0].x - b[0].x);
+      const orderedHands = [...hands].sort((a, b) => a[0].x - b[0].x);
 
-      if (smoothedHands.length !== ordered.length) {
-        smoothedHands = ordered.map(hand =>
+      if (smoothedHands.length !== orderedHands.length) {
+        smoothedHands = orderedHands.map(hand =>
           hand.map(point => ({
             x: point.x,
             y: point.y,
@@ -422,15 +439,15 @@
         return smoothedHands;
       }
 
-      for (let h = 0; h < ordered.length; h++) {
-        for (let i = 0; i < ordered[h].length; i++) {
-          const target = ordered[h][i];
+      for (let h = 0; h < orderedHands.length; h++) {
+        for (let i = 0; i < orderedHands[h].length; i++) {
+          const target = orderedHands[h][i];
           const current = smoothedHands[h][i];
-          const distance = Math.hypot(
+          const movement = Math.hypot(
             target.x - current.x,
             target.y - current.y
           );
-          const blend = Math.min(0.72, 0.24 + distance * 3);
+          const blend = Math.min(0.72, 0.24 + movement * 3);
 
           current.x += (target.x - current.x) * blend;
           current.y += (target.y - current.y) * blend;
@@ -482,7 +499,6 @@
       );
     }
 
-    // Обнаруживает раскрытую ладонь; большой палец необязателен.
     function isOpenHand(hand) {
       const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
       const wrist = hand[0];
@@ -604,15 +620,15 @@
     function detectHeart(hands) {
       if (hands.length < 2) return null;
 
-      const sorted = hands
+      const orderedHands = hands
         .map(hand => ({ hand, wrist: mapPoint(hand[0]) }))
         .filter(item => item.wrist)
         .sort((a, b) => a.wrist.x - b.wrist.x);
 
-      if (sorted.length < 2) return null;
+      if (orderedHands.length < 2) return null;
 
-      const left = sorted[0].hand;
-      const right = sorted[1].hand;
+      const left = orderedHands[0].hand;
+      const right = orderedHands[1].hand;
 
       const leftIndex = mapPoint(left[8]);
       const rightIndex = mapPoint(right[8]);
@@ -693,8 +709,19 @@
       setStatus("Меню закрыто");
     }
 
+    // На компьютере закрываем при наведении мышью.
     readyButton.addEventListener("pointerenter", event => {
-      if (event.pointerType === "mouse" && modeMenu.classList.contains("open")) {
+      if (
+        event.pointerType === "mouse" &&
+        modeMenu.classList.contains("open")
+      ) {
+        closeMenu();
+      }
+    });
+
+    // На телефоне закрываем меню нажатием или касанием кнопки.
+    readyButton.addEventListener("click", () => {
+      if (modeMenu.classList.contains("open")) {
         closeMenu();
       }
     });
@@ -717,7 +744,6 @@
 
     function processFrame() {
       if (!running) return;
-
       requestAnimationFrame(processFrame);
 
       try {
@@ -751,14 +777,17 @@
         }
 
         if (modeMenu.classList.contains("open")) {
-          setStatus("Меню открыто — наведи мышь на «Готово»");
+          setStatus("Меню открыто — нажми «Готово»");
           return;
         }
 
         const heart = detectHeart(hands);
 
         if (heart) {
-          if (!heartWasDetected) drawHeart(heart);
+          if (!heartWasDetected) {
+            drawHeart(heart);
+          }
+
           heartWasDetected = true;
           previousPoint = null;
           previousMode = null;
@@ -813,11 +842,13 @@
 
         if (mode === "draw") {
           setStatus("Рисуешь");
+
           if (previousPoint && previousMode === "draw") {
             drawNeonLine(draw, previousPoint, point, brushSize);
           }
         } else {
           setStatus("Стираешь");
+
           if (previousPoint && previousMode === "erase") {
             eraseLine(previousPoint, point);
           } else {
@@ -863,7 +894,7 @@
           "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm"
         );
 
-        const commonOptions = {
+        const options = {
           runningMode: "VIDEO",
           numHands: 2,
           minHandDetectionConfidence: 0.55,
@@ -876,17 +907,17 @@
 
         try {
           landmarker = await HandLandmarker.createFromOptions(vision, {
-            ...commonOptions,
+            ...options,
             baseOptions: {
               modelAssetPath,
               delegate: "GPU"
             }
           });
         } catch (gpuError) {
-          console.warn("GPU недоступен, переключаюсь на CPU:", gpuError);
+          console.warn("GPU недоступен, использую CPU:", gpuError);
 
           landmarker = await HandLandmarker.createFromOptions(vision, {
-            ...commonOptions,
+            ...options,
             baseOptions: {
               modelAssetPath,
               delegate: "CPU"
@@ -909,7 +940,7 @@
       }
     });
 
-    addEventListener("beforeunload", () => {
+    window.addEventListener("beforeunload", () => {
       running = false;
       clearTimeout(cinemaTimer);
       cameraStream?.getTracks().forEach(track => track.stop());
