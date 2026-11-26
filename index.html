@@ -444,11 +444,11 @@
     let gestureDirectionFrames = 0;
     let gestureDirectionLatched = false;
     let audioContext = null;
-
-    // Объявление состояния жеста сердца — исправляет heartWasDetected is not defined.
+    let lastDrawingSoundTime = 0;
     let heartWasDetected = false;
 
     const MAX_ACTIONS = 60;
+    const DRAW_SOUND_INTERVAL = 150;
 
     function setStatus(message) {
       status.textContent = message;
@@ -459,7 +459,10 @@
 
       try {
         audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
-        if (audioContext.state === "suspended") audioContext.resume();
+
+        if (audioContext.state === "suspended") {
+          audioContext.resume();
+        }
 
         const oscillator = audioContext.createOscillator();
         const gain = audioContext.createGain();
@@ -471,13 +474,17 @@
           undo: 390,
           redo: 620,
           heart: 740,
-          text: 580
+          text: 580,
+          draw: 520
         };
 
         oscillator.type = "sine";
         oscillator.frequency.setValueAtTime(frequencies[kind] || 500, now);
         gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(0.07, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(
+          kind === "draw" ? 0.035 : 0.07,
+          now + 0.015
+        );
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
 
         oscillator.connect(gain);
@@ -489,8 +496,18 @@
       }
     }
 
+    function playDrawingSound() {
+      const now = performance.now();
+
+      if (now - lastDrawingSoundTime < DRAW_SOUND_INTERVAL) return;
+
+      lastDrawingSoundTime = now;
+      playSound("draw");
+    }
+
     function currentColor() {
       if (!features.rainbow) return drawingColor;
+
       rainbowHue = (rainbowHue + 5) % 360;
       return `hsl(${rainbowHue} 100% 58%)`;
     }
@@ -631,7 +648,6 @@
       );
     }
 
-    // Эта функция отсутствовала в предыдущем коде.
     function isOpenHand(hand) {
       const wrist = hand[0];
       const fingers = [
@@ -692,10 +708,11 @@
       addAction(action);
       activeStrokes.set(key, action);
       drawNeonSegment(draw, point, point, width, color);
+      playDrawingSound();
     }
 
     function continueStroke(key, point) {
-      let action = activeStrokes.get(key);
+      const action = activeStrokes.get(key);
 
       if (!action) {
         beginStroke(key, point);
@@ -707,6 +724,7 @@
 
       action.points.push({ ...point });
       drawNeonSegment(draw, last, point, action.width, action.color);
+      playDrawingSound();
     }
 
     function finishStrokesExcept(keys) {
@@ -987,30 +1005,60 @@
       overlay.restore();
     }
 
-    function horizontalPointDirection(hand) {
-      const oneFinger =
-        fingerUp(hand, 8, 6) &&
-        !fingerUp(hand, 12, 10) &&
-        !fingerUp(hand, 16, 14) &&
-        !fingerUp(hand, 20, 18);
+    function drawEraseCursor(point) {
+      const eraserWidth = Math.max(26, brushSize * 4);
+      const radius = eraserWidth / 2;
 
-      if (!oneFinger) return "";
+      overlay.save();
+      overlay.beginPath();
+      overlay.arc(point.x, point.y, radius, 0, Math.PI * 2);
+      overlay.lineWidth = 3;
+      overlay.strokeStyle = "#ff72d2";
+      overlay.shadowColor = "#ff35bd";
+      overlay.shadowBlur = 12;
+      overlay.stroke();
+
+      overlay.beginPath();
+      overlay.arc(point.x, point.y, 3, 0, Math.PI * 2);
+      overlay.fillStyle = "#fff";
+      overlay.fill();
+      overlay.restore();
+    }
+
+    function horizontalPointDirection(hand) {
+      // Проверяем вытянутый указательный и согнутые остальные пальцы,
+      // не требуя, чтобы указательный был направлен вверх.
+      const wrist = hand[0];
+      const indexExtended =
+        distance(hand[8], wrist) > distance(hand[6], wrist) * 1.08;
+
+      const otherFingersCurled =
+        distance(hand[12], wrist) < distance(hand[10], wrist) * 1.08 &&
+        distance(hand[16], wrist) < distance(hand[14], wrist) * 1.08 &&
+        distance(hand[20], wrist) < distance(hand[18], wrist) * 1.08;
+
+      if (!indexExtended || !otherFingersCurled) return "";
 
       const tip = mapPoint(hand[8]);
       const base = mapPoint(hand[5]);
-      const wrist = mapPoint(hand[0]);
-      const palm = mapPoint(hand[9]);
+      const wristPoint = mapPoint(hand[0]);
+      const palmPoint = mapPoint(hand[9]);
 
-      if (!tip || !base || !wrist || !palm) return "";
+      if (!tip || !base || !wristPoint || !palmPoint) return "";
 
       const dx = tip.x - base.x;
       const dy = tip.y - base.y;
-      const scale = Math.max(1, distance(wrist, palm));
+      const scale = Math.max(1, distance(wristPoint, palmPoint));
 
-      if (Math.abs(dx) < scale * 0.9 || Math.abs(dx) < Math.abs(dy) * 1.5) {
+      // Палец должен быть явно направлен в сторону, а не вверх или вниз.
+      if (
+        Math.abs(dx) < scale * 0.65 ||
+        Math.abs(dx) < Math.abs(dy) * 1.35
+      ) {
         return "";
       }
 
+      // Координаты уже зеркальные, как изображение камеры на экране.
       return dx < 0 ? "undo" : "redo";
     }
 
@@ -1214,8 +1262,12 @@
 
             if (gestureDirectionFrames >= 10 && !gestureDirectionLatched) {
               gestureDirectionLatched = true;
-              if (direction === "undo") undo();
-              else redo();
+
+              if (direction === "undo") {
+                undo();
+              } else {
+                redo();
+              }
             }
 
             setStatus(
@@ -1279,6 +1331,9 @@
 
               activeKeys.add("erase");
               continueErase(point);
+
+              // Показывает круг, соответствующий размеру стирания.
+              drawEraseCursor(point);
               didSomething = true;
             }
           }
@@ -1323,6 +1378,10 @@
         await video.play();
 
         audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+
+        if (audioContext.state === "suspended") {
+          await audioContext.resume();
+        }
 
         setStatus("Загружаю распознавание…");
 
