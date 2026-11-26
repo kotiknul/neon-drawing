@@ -31,7 +31,6 @@
     }
 
     canvas { pointer-events: none; }
-
     button, input { touch-action: manipulation; }
 
     button {
@@ -440,15 +439,18 @@
     let cinemaFrames = 0;
     let cinemaLatched = false;
     let cinemaTimer = null;
+
     let gestureDirection = "";
     let gestureDirectionFrames = 0;
     let gestureDirectionLatched = false;
+
     let audioContext = null;
     let lastDrawingSoundTime = 0;
     let heartWasDetected = false;
 
     const MAX_ACTIONS = 60;
     const DRAW_SOUND_INTERVAL = 150;
+    const UNDO_REDO_HOLD_FRAMES = 8;
 
     function setStatus(message) {
       status.textContent = message;
@@ -827,7 +829,10 @@
     }
 
     function undo() {
-      if (!actions.length) return;
+      if (!actions.length) {
+        setStatus("Нечего отменять");
+        return;
+      }
 
       activeStrokes.clear();
       redoActions.push(actions.pop());
@@ -837,7 +842,10 @@
     }
 
     function redo() {
-      if (!redoActions.length) return;
+      if (!redoActions.length) {
+        setStatus("Нечего возвращать");
+        return;
+      }
 
       activeStrokes.clear();
       actions.push(redoActions.pop());
@@ -1006,59 +1014,66 @@
     }
 
     function drawEraseCursor(point) {
-      const eraserWidth = Math.max(26, brushSize * 4);
+      // Размер круга соответствует ширине ластика и сделан заметным на экране.
+      const eraserWidth = Math.max(36, brushSize * 4);
       const radius = eraserWidth / 2;
 
       overlay.save();
+
       overlay.beginPath();
       overlay.arc(point.x, point.y, radius, 0, Math.PI * 2);
-      overlay.lineWidth = 3;
-      overlay.strokeStyle = "#ff72d2";
+      overlay.fillStyle = "rgba(255, 53, 189, 0.20)";
+      overlay.fill();
+
+      overlay.beginPath();
+      overlay.arc(point.x, point.y, radius, 0, Math.PI * 2);
+      overlay.lineWidth = 4;
+      overlay.strokeStyle = "#ff8bd8";
       overlay.shadowColor = "#ff35bd";
-      overlay.shadowBlur = 12;
+      overlay.shadowBlur = 18;
       overlay.stroke();
 
       overlay.beginPath();
-      overlay.arc(point.x, point.y, 3, 0, Math.PI * 2);
+      overlay.arc(point.x, point.y, 4, 0, Math.PI * 2);
       overlay.fillStyle = "#fff";
+      overlay.shadowBlur = 0;
       overlay.fill();
+
       overlay.restore();
     }
 
     function horizontalPointDirection(hand) {
-      // Проверяем вытянутый указательный и согнутые остальные пальцы,
-      // не требуя, чтобы указательный был направлен вверх.
-      const wrist = hand[0];
-      const indexExtended =
-        distance(hand[8], wrist) > distance(hand[6], wrist) * 1.08;
-
-      const otherFingersCurled =
-        distance(hand[12], wrist) < distance(hand[10], wrist) * 1.08 &&
-        distance(hand[16], wrist) < distance(hand[14], wrist) * 1.08 &&
-        distance(hand[20], wrist) < distance(hand[18], wrist) * 1.08;
-
-      if (!indexExtended || !otherFingersCurled) return "";
-
       const tip = mapPoint(hand[8]);
       const base = mapPoint(hand[5]);
-      const wristPoint = mapPoint(hand[0]);
-      const palmPoint = mapPoint(hand[9]);
+      const pip = mapPoint(hand[6]);
+      const wrist = mapPoint(hand[0]);
 
-      if (!tip || !base || !wristPoint || !palmPoint) return "";
+      if (!tip || !base || !pip || !wrist) return "";
+
+      // Указательный должен быть вытянут относительно своего основания.
+      const indexExtended =
+        distance(tip, base) > distance(pip, base) * 1.12;
+
+      if (!indexExtended) return "";
+
+      // Остальные пальцы должны быть согнуты; проверка допускает небольшую погрешность.
+      const otherFingersCurled =
+        distance(hand[12], hand[0]) < distance(hand[10], hand[0]) * 1.25 &&
+        distance(hand[16], hand[0]) < distance(hand[14], hand[0]) * 1.25 &&
+        distance(hand[20], hand[0]) < distance(hand[18], hand[0]) * 1.25;
+
+      if (!otherFingersCurled) return "";
 
       const dx = tip.x - base.x;
       const dy = tip.y - base.y;
-      const scale = Math.max(1, distance(wristPoint, palmPoint));
+      const scale = Math.max(1, distance(wrist, mapPoint(hand[9])));
 
-      // Палец должен быть явно направлен в сторону, а не вверх или вниз.
-      if (
-        Math.abs(dx) < scale * 0.65 ||
-        Math.abs(dx) < Math.abs(dy) * 1.35
-      ) {
+      // Требуем отчётливое горизонтальное направление пальца.
+      if (Math.abs(dx) < scale * 0.55 || Math.abs(dx) < Math.abs(dy) * 1.25) {
         return "";
       }
 
-      // Координаты уже зеркальные, как изображение камеры на экране.
+      // Экран зеркальный, поэтому направление соответствует тому, что видит пользователь.
       return dx < 0 ? "undo" : "redo";
     }
 
@@ -1260,7 +1275,10 @@
 
             finishStrokesExcept(new Set());
 
-            if (gestureDirectionFrames >= 10 && !gestureDirectionLatched) {
+            if (
+              gestureDirectionFrames >= UNDO_REDO_HOLD_FRAMES &&
+              !gestureDirectionLatched
+            ) {
               gestureDirectionLatched = true;
 
               if (direction === "undo") {
@@ -1332,7 +1350,7 @@
               activeKeys.add("erase");
               continueErase(point);
 
-              // Показывает круг, соответствующий размеру стирания.
+              // Рисуем курсор ластика после скелета, чтобы круг не затирался.
               drawEraseCursor(point);
               didSomething = true;
             }
