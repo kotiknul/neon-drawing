@@ -18,9 +18,7 @@
       font-family: Arial, sans-serif;
     }
 
-    #camera,
-    #backgroundLayer,
-    canvas {
+    #camera, #backgroundLayer, canvas {
       position: fixed;
       inset: 0;
       width: 100%;
@@ -35,8 +33,8 @@
 
     #backgroundLayer {
       z-index: 1;
-      background: transparent;
       pointer-events: none;
+      background: transparent;
     }
 
     #drawingCanvas { z-index: 2; pointer-events: none; }
@@ -78,7 +76,6 @@
       box-shadow: 0 0 22px rgb(0 190 255 / 40%);
       font-size: 16px;
       pointer-events: auto;
-      touch-action: manipulation;
     }
 
     #mainBar {
@@ -172,20 +169,19 @@
     .panel h2 { margin: 0 0 12px; font-size: 20px; }
     .panel h3 { margin: 15px 0 8px; font-size: 14px; }
 
-    .gesture-list {
-      padding: 10px 12px;
-      border-radius: 11px;
-      background: #0b1c24;
+    .gesture-list, .note {
       color: #d8f8ff;
       font-size: 12px;
       line-height: 1.6;
     }
 
-    .note {
-      color: #a9c3ca;
-      font-size: 12px;
-      line-height: 1.45;
+    .gesture-list {
+      padding: 10px 12px;
+      border-radius: 11px;
+      background: #0b1c24;
     }
+
+    .note { color: #a9c3ca; }
 
     .grid {
       display: grid;
@@ -348,8 +344,7 @@
   <canvas id="textCanvas"></canvas>
   <canvas id="overlayCanvas"></canvas>
 
-  <!-- onclick — кнопка вызывает функцию напрямую -->
-  <button id="startButton" type="button" onclick="startCamera()">
+  <button id="startButton" type="button" onclick="window.startCamera()">
     Включить камеру
   </button>
 
@@ -394,15 +389,15 @@
 
       <h3>Функции</h3>
       <div class="toggle-list">
-        <div class="toggle-row"><span>Рисование одним пальцем</span><button class="switch on" data-feature="draw" type="button"></button></div>
-        <div class="toggle-row"><span>Стирание</span><button class="switch on" data-feature="erase" type="button"></button></div>
-        <div class="toggle-row"><span>Рисование двумя пальцами V</span><button class="switch on" data-feature="twoFingerDraw" type="button"></button></div>
-        <div class="toggle-row"><span>Сердце</span><button class="switch on" data-feature="heart" type="button"></button></div>
-        <div class="toggle-row"><span>Absolute Cinema</span><button class="switch on" data-feature="cinema" type="button"></button></div>
-        <div class="toggle-row"><span>Текст</span><button class="switch on" data-feature="text" type="button"></button></div>
-        <div class="toggle-row"><span>Отмена/возврат жестом</span><button class="switch on" data-feature="undoRedo" type="button"></button></div>
-        <div class="toggle-row"><span>Настройки тремя пальцами</span><button class="switch on" data-feature="menuGesture" type="button"></button></div>
-        <div class="toggle-row"><span>Звуки</span><button class="switch on" data-feature="sounds" type="button"></button></div>
+        <div class="toggle-row"><span>Рисование одним пальцем</span><button class="switch on" data-feature="draw" type="button" aria-pressed="true"></button></div>
+        <div class="toggle-row"><span>Стирание</span><button class="switch on" data-feature="erase" type="button" aria-pressed="true"></button></div>
+        <div class="toggle-row"><span>Рисование двумя пальцами V</span><button class="switch on" data-feature="twoFingerDraw" type="button" aria-pressed="true"></button></div>
+        <div class="toggle-row"><span>Сердце</span><button class="switch on" data-feature="heart" type="button" aria-pressed="true"></button></div>
+        <div class="toggle-row"><span>Absolute Cinema</span><button class="switch on" data-feature="cinema" type="button" aria-pressed="true"></button></div>
+        <div class="toggle-row"><span>Текст</span><button class="switch on" data-feature="text" type="button" aria-pressed="true"></button></div>
+        <div class="toggle-row"><span>Отмена/возврат жестом</span><button class="switch on" data-feature="undoRedo" type="button" aria-pressed="true"></button></div>
+        <div class="toggle-row"><span>Настройки тремя пальцами</span><button class="switch on" data-feature="menuGesture" type="button" aria-pressed="true"></button></div>
+        <div class="toggle-row"><span>Звуки</span><button class="switch on" data-feature="sounds" type="button" aria-pressed="true"></button></div>
       </div>
 
       <h3>Действия</h3>
@@ -454,14 +449,10 @@
         <label for="backgroundColorPicker">Цвет фона</label>
         <input id="backgroundColorPicker" type="color" value="#111827">
       </div>
-      <button id="cameraBackgroundButton" class="wide" type="button">
-        Вернуть фон камеры
-      </button>
+      <button id="cameraBackgroundButton" class="wide" type="button">Вернуть фон камеры</button>
 
       <h3>Слои</h3>
-      <p class="note">
-        Выбери слой для рисования. Скрытые слои не отображаются и не сохраняются в PNG.
-      </p>
+      <p class="note">Выбери слой для рисования. Скрытые слои не попадут в PNG.</p>
 
       <label class="row">
         <span>Активный слой</span>
@@ -472,9 +463,9 @@
       </label>
 
       <div class="toggle-list">
-        <div class="toggle-row"><span>Показывать рисунок</span><button class="switch on" data-layer="drawing" type="button"></button></div>
-        <div class="toggle-row"><span>Показывать текст</span><button class="switch on" data-layer="text" type="button"></button></div>
-        <div class="toggle-row"><span>Показывать фон</span><button class="switch on" data-layer="background" type="button"></button></div>
+        <div class="toggle-row"><span>Показывать рисунок</span><button class="switch on" data-layer="drawing" type="button" aria-pressed="true"></button></div>
+        <div class="toggle-row"><span>Показывать текст</span><button class="switch on" data-layer="text" type="button" aria-pressed="true"></button></div>
+        <div class="toggle-row"><span>Показывать фон</span><button class="switch on" data-layer="background" type="button" aria-pressed="true"></button></div>
       </div>
 
       <input id="textInput" type="text" maxlength="40" placeholder="Введи текст"
@@ -486,33 +477,35 @@
   </section>
 
   <script>
-    /*
-      Кнопка камеры вызывает эту функцию через onclick.
-      Функция объявлена глобально, а MediaPipe загружается по нажатию.
-    */
+    window.cameraStarting = false;
+    window.cameraRunning = false;
+    window.cameraStream = null;
+    window.handLandmarker = null;
+
     window.startCamera = async function () {
-      const startButton = document.getElementById("startButton");
+      const button = document.getElementById("startButton");
       const status = document.getElementById("status");
       const video = document.getElementById("camera");
 
       if (window.cameraStarting || window.cameraRunning) return;
 
       window.cameraStarting = true;
-      startButton.disabled = true;
-      startButton.textContent = "Запускаю…";
+      button.disabled = true;
+      button.textContent = "Запускаю…";
       status.textContent = "Запрашиваю доступ к камере…";
 
       try {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          throw new Error("Камера требует HTTPS и современный браузер.");
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error("Для камеры нужен HTTPS и современный браузер.");
         }
 
         window.cameraStream = await navigator.mediaDevices.getUserMedia({
           audio: false,
           video: {
             facingMode: "user",
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            frameRate: { ideal: 24 }
           }
         });
 
@@ -546,7 +539,7 @@
             baseOptions: { modelAssetPath, delegate: "GPU" }
           });
         } catch (gpuError) {
-          console.warn("GPU не сработал, пробую CPU:", gpuError);
+          console.warn("GPU недоступен, пробую CPU:", gpuError);
           window.handLandmarker = await mp.HandLandmarker.createFromOptions(vision, {
             ...options,
             baseOptions: { modelAssetPath, delegate: "CPU" }
@@ -554,20 +547,19 @@
         }
 
         window.cameraRunning = true;
-        startButton.style.display = "none";
+        button.style.display = "none";
         status.textContent = "Камера включена — показывай жест";
         window.showHint?.("Камера включена");
-        window.requestAnimationFrame(window.processFrame);
+        requestAnimationFrame(window.processFrame);
       } catch (error) {
-        console.error("Не удалось запустить камеру:", error);
-
+        console.error("Ошибка запуска:", error);
         window.cameraStream?.getTracks().forEach(track => track.stop());
         window.cameraStream = null;
         video.srcObject = null;
 
-        startButton.disabled = false;
-        startButton.textContent = "Попробовать снова";
-        startButton.style.display = "block";
+        button.disabled = false;
+        button.textContent = "Попробовать снова";
+        button.style.display = "block";
         status.textContent = `Не удалось запустить: ${error.message || error}`;
       } finally {
         window.cameraStarting = false;
@@ -622,6 +614,9 @@
       ];
 
       let lastVideoTime = -1;
+      let lastDetectionAt = 0;
+      const DETECTION_INTERVAL_MS = 120;
+
       let smoothedHands = [];
       let drawingColor = "#00cfff";
       let backgroundColor = null;
@@ -654,7 +649,7 @@
       let lastSoundTime = 0;
       let hintTimer = null;
 
-      const maxActions = 80;
+      const MAX_ACTIONS = 80;
 
       function setStatus(message) {
         status.textContent = message;
@@ -734,7 +729,8 @@
         drawingCanvas.style.visibility = layerVisible.drawing ? "visible" : "hidden";
         textCanvas.style.visibility = layerVisible.text ? "visible" : "hidden";
         backgroundLayer.style.visibility = layerVisible.background ? "visible" : "hidden";
-        video.style.visibility = backgroundColor && layerVisible.background ? "hidden" : "visible";
+        video.style.visibility =
+          backgroundColor && layerVisible.background ? "hidden" : "visible";
       }
 
       function resizeCanvases() {
@@ -804,7 +800,7 @@
           return smoothedHands;
         }
 
-        const smoothing = 0.72 + (sensitivity / 10) * 0.2;
+        const smoothing = 0.70 + sensitivity * 0.025;
 
         for (let h = 0; h < ordered.length; h++) {
           for (let i = 0; i < ordered[h].length; i++) {
@@ -945,7 +941,7 @@
 
       function addAction(action) {
         actions.push(action);
-        if (actions.length > maxActions) actions.shift();
+        if (actions.length > MAX_ACTIONS) actions.shift();
         redoActions = [];
       }
 
@@ -1179,8 +1175,11 @@
 
         for (let t = 0; t <= Math.PI * 2; t += 0.07) {
           const x = 16 * Math.sin(t) ** 3;
-          const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) -
-            2 * Math.cos(3 * t) - Math.cos(4 * t);
+          const y =
+            13 * Math.cos(t) -
+            5 * Math.cos(2 * t) -
+            2 * Math.cos(3 * t) -
+            Math.cos(4 * t);
 
           points.push({
             x: center.x + x * center.size / 34,
@@ -1289,35 +1288,64 @@
         showHint("Рисунок сохранён");
       }
 
-      $("settingsButton").addEventListener("click", () => openPanel("settings"));
-      $("toolsButton").addEventListener("click", () => openPanel("tools"));
-      document.querySelectorAll("[data-close]").forEach(button =>
-        button.addEventListener("click", closePanel)
-      );
-
+      /*
+       * Один обработчик для всех переключателей.
+       * Он также обновляет состояние функций и видимость слоёв.
+       */
       modal.addEventListener("click", event => {
-        if (event.target === modal) closePanel();
-      });
+        const target = event.target;
+        if (!(target instanceof Element)) return;
 
-      document.querySelectorAll("[data-feature]").forEach(button => {
-        button.addEventListener("click", () => {
-          const feature = button.dataset.feature;
+        const featureButton = target.closest("button[data-feature]");
+
+        if (featureButton) {
+          const feature = featureButton.dataset.feature;
+          if (!(feature in features)) return;
+
           features[feature] = !features[feature];
-          button.classList.toggle("on", features[feature]);
+          featureButton.classList.toggle("on", features[feature]);
+          featureButton.setAttribute("aria-pressed", String(features[feature]));
+
           showHint(features[feature] ? "Функция включена" : "Функция выключена");
-        });
+          return;
+        }
+
+        const layerButton = target.closest("button[data-layer]");
+
+        if (layerButton) {
+          const layer = layerButton.dataset.layer;
+          if (!(layer in layerVisible)) return;
+
+          layerVisible[layer] = !layerVisible[layer];
+          layerButton.classList.toggle("on", layerVisible[layer]);
+          layerButton.setAttribute("aria-pressed", String(layerVisible[layer]));
+          updateLayerVisibility();
+
+          showHint(layerVisible[layer] ? "Слой показан" : "Слой скрыт");
+        }
       });
 
       document.querySelectorAll(".brush-choice").forEach(button => {
         button.addEventListener("click", () => {
           selectedBrush = button.dataset.brush;
 
-          document.querySelectorAll(".brush-choice").forEach(item =>
-            item.classList.toggle("selected", item === button)
-          );
+          document.querySelectorAll(".brush-choice").forEach(item => {
+            item.classList.toggle("selected", item === button);
+          });
 
           showHint(`Кисть: ${button.textContent}`);
         });
+      });
+
+      $("settingsButton").addEventListener("click", () => openPanel("settings"));
+      $("toolsButton").addEventListener("click", () => openPanel("tools"));
+
+      document.querySelectorAll("[data-close]").forEach(button => {
+        button.addEventListener("click", closePanel);
+      });
+
+      modal.addEventListener("click", event => {
+        if (event.target === modal) closePanel();
       });
 
       $("brushSizePicker").addEventListener("input", event => {
@@ -1333,6 +1361,7 @@
       $("sensitivityPicker").addEventListener("input", event => {
         sensitivity = Number(event.target.value);
         $("sensitivityValue").textContent = String(sensitivity);
+        showHint(`Чувствительность: ${sensitivity}`);
       });
 
       $("colorPicker").addEventListener("input", event => {
@@ -1358,21 +1387,19 @@
         showHint(`Активен слой: ${activeLayer === "text" ? "текст" : "рисунок"}`);
       });
 
-      document.querySelectorAll("[data-layer]").forEach(button => {
-        button.addEventListener("click", () => {
-          const layer = button.dataset.layer;
-          layerVisible[layer] = !layerVisible[layer];
-          button.classList.toggle("on", layerVisible[layer]);
-          updateLayerVisibility();
-        });
-      });
-
       $("rainbowButton").addEventListener("click", event => {
         features.rainbow = !features.rainbow;
         event.currentTarget.textContent = features.rainbow
           ? "🌈 Радужная: вкл."
           : "🌈 Радужная: выкл.";
-        showHint(features.rainbow ? "Радужная кисть включена" : "Радужная кисть выключена");
+
+        const toggle = document.querySelector('[data-feature="rainbow"]');
+        if (toggle) {
+          toggle.classList.toggle("on", features.rainbow);
+          toggle.setAttribute("aria-pressed", String(features.rainbow));
+        }
+
+        showHint(features.rainbow ? "Радужная кисть включена" : "Радужная выключена");
       });
 
       $("symmetryButton").addEventListener("click", event => {
@@ -1415,13 +1442,14 @@
         showHint("Холст очищен");
       });
 
-      $("clearLayerButton").addEventListener("click", () => clearLayer(activeLayer));
+      $("clearLayerButton").addEventListener("click", () => {
+        clearLayer(activeLayer);
+      });
+
       $("saveButton").addEventListener("click", savePng);
 
-      function drawEraseCursor(point) {
-        overlay.save();
-
-        const drawCircle = x => {
+      function drawEraserCursor(point) {
+        function circle(x) {
           overlay.beginPath();
           overlay.arc(x, point.y, eraserSize / 2, 0, Math.PI * 2);
           overlay.fillStyle = "rgba(255, 53, 189, .18)";
@@ -1431,10 +1459,11 @@
           overlay.shadowColor = "#ff35bd";
           overlay.shadowBlur = 15;
           overlay.stroke();
-        };
+        }
 
-        drawCircle(point.x);
-        if (symmetry) drawCircle(innerWidth - point.x);
+        overlay.save();
+        circle(point.x);
+        if (symmetry) circle(innerWidth - point.x);
         overlay.restore();
       }
 
@@ -1504,22 +1533,31 @@
 
       function processFrame() {
         if (!window.cameraRunning) return;
+
+        // Планируем следующий кадр заранее: пропуск анализа не останавливает цикл.
         requestAnimationFrame(processFrame);
 
+        const detector = window.handLandmarker;
+        if (!detector || video.readyState < 2) return;
+
+        const now = performance.now();
+
+        // Ограничение частоты распознавания снижает нагрузку на телефон.
+        if (
+          video.currentTime === lastVideoTime ||
+          now - lastDetectionAt < DETECTION_INTERVAL_MS
+        ) {
+          return;
+        }
+
+        lastVideoTime = video.currentTime;
+        lastDetectionAt = now;
+
         try {
-          const detector = window.handLandmarker;
-
-          if (
-            !detector ||
-            video.readyState < 2 ||
-            video.currentTime === lastVideoTime
-          ) return;
-
-          lastVideoTime = video.currentTime;
-          const now = performance.now();
           const result = detector.detectForVideo(video, now);
           const hands = smoothHands(result.landmarks || []);
 
+          overlay.clearRect(0, 0, innerWidth, innerHeight);
           drawSkeleton(hands);
 
           if (modal.classList.contains("open")) return;
@@ -1533,6 +1571,7 @@
               openPanel("settings");
               return;
             }
+
             if (!pose) menuLatched = false;
           }
 
@@ -1546,6 +1585,7 @@
               return;
             }
           }
+
           heartLatched = false;
 
           if (features.cinema && hands.length >= 2 && hands.every(isOpenHand)) {
@@ -1640,7 +1680,7 @@
               } else if (mode === "erase" && features.erase) {
                 activeKeys.add("erase");
                 continueErase(point);
-                drawEraseCursor(point);
+                drawEraserCursor(point);
                 erasing = true;
               }
             });
@@ -1653,139 +1693,13 @@
           else if (pendingText) setStatus("Укажи пальцем место для текста");
           else setStatus("Покажи жест для рисования");
         } catch (error) {
-          console.error("Ошибка обработки видео:", error);
-          setStatus(`Ошибка распознавания: ${error.message || error}`);
+          console.error("Ошибка распознавания:", error);
+          setStatus(`Ошибка: ${error.message || error}`);
           activeStrokes.clear();
         }
       }
 
       window.processFrame = processFrame;
-
-      $("settingsButton").addEventListener("click", () => openPanel("settings"));
-      $("toolsButton").addEventListener("click", () => openPanel("tools"));
-
-      document.querySelectorAll("[data-close]").forEach(button =>
-        button.addEventListener("click", closePanel)
-      );
-
-      modal.addEventListener("click", event => {
-        if (event.target === modal) closePanel();
-      });
-
-      document.querySelectorAll("[data-feature]").forEach(button => {
-        button.addEventListener("click", () => {
-          const feature = button.dataset.feature;
-          features[feature] = !features[feature];
-          button.classList.toggle("on", features[feature]);
-          showHint(features[feature] ? "Функция включена" : "Функция выключена");
-        });
-      });
-
-      document.querySelectorAll(".brush-choice").forEach(button => {
-        button.addEventListener("click", () => {
-          selectedBrush = button.dataset.brush;
-          document.querySelectorAll(".brush-choice").forEach(item =>
-            item.classList.toggle("selected", item === button)
-          );
-          showHint(`Кисть: ${button.textContent}`);
-        });
-      });
-
-      $("brushSizePicker").addEventListener("input", event => {
-        brushSize = Number(event.target.value);
-        $("brushSizeValue").textContent = `${brushSize} px`;
-      });
-
-      $("eraserSizePicker").addEventListener("input", event => {
-        eraserSize = Number(event.target.value);
-        $("eraserSizeValue").textContent = `${eraserSize} px`;
-      });
-
-      $("sensitivityPicker").addEventListener("input", event => {
-        sensitivity = Number(event.target.value);
-        $("sensitivityValue").textContent = String(sensitivity);
-      });
-
-      $("colorPicker").addEventListener("input", event => {
-        drawingColor = event.target.value;
-      });
-
-      $("backgroundColorPicker").addEventListener("input", event => {
-        backgroundColor = event.target.value;
-        backgroundLayer.style.background = backgroundColor;
-        updateLayerVisibility();
-        showHint("Фон изменён");
-      });
-
-      $("cameraBackgroundButton").addEventListener("click", () => {
-        backgroundColor = null;
-        backgroundLayer.style.background = "transparent";
-        updateLayerVisibility();
-        showHint("Возвращён фон камеры");
-      });
-
-      $("activeLayerPicker").addEventListener("change", event => {
-        activeLayer = event.target.value;
-        showHint(`Активный слой: ${activeLayer === "text" ? "текст" : "рисунок"}`);
-      });
-
-      document.querySelectorAll("[data-layer]").forEach(button => {
-        button.addEventListener("click", () => {
-          const layer = button.dataset.layer;
-          layerVisible[layer] = !layerVisible[layer];
-          button.classList.toggle("on", layerVisible[layer]);
-          updateLayerVisibility();
-        });
-      });
-
-      $("rainbowButton").addEventListener("click", event => {
-        features.rainbow = !features.rainbow;
-        event.currentTarget.textContent = features.rainbow
-          ? "🌈 Радужная: вкл."
-          : "🌈 Радужная: выкл.";
-        showHint(features.rainbow ? "Радужная кисть включена" : "Радужная выключена");
-      });
-
-      $("symmetryButton").addEventListener("click", event => {
-        symmetry = !symmetry;
-        event.currentTarget.textContent = symmetry ? "Зеркало: вкл." : "Зеркало: выкл.";
-        event.currentTarget.classList.toggle("selected", symmetry);
-        showHint(symmetry ? "Симметрия включена" : "Симметрия выключена");
-      });
-
-      $("placeTextButton").addEventListener("click", () => {
-        if (!features.text) {
-          showHint("Текст отключён в настройках");
-          return;
-        }
-
-        if (!$("textInput").value.trim()) {
-          $("textInput").focus();
-          showHint("Сначала введи текст");
-          return;
-        }
-
-        activeLayer = "text";
-        $("activeLayerPicker").value = "text";
-        pendingText = true;
-        closePanel();
-        setStatus("Покажи указательный палец в месте для текста");
-      });
-
-      $("undoButton").addEventListener("click", undo);
-      $("redoButton").addEventListener("click", redo);
-
-      $("clearAllButton").addEventListener("click", () => {
-        actions = [];
-        redoActions = [];
-        activeStrokes.clear();
-        redrawAll();
-        setStatus("Все слои очищены");
-        showHint("Холст очищен");
-      });
-
-      $("clearLayerButton").addEventListener("click", () => clearLayer(activeLayer));
-      $("saveButton").addEventListener("click", savePng);
 
       addEventListener("resize", resizeCanvases);
 
