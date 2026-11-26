@@ -200,37 +200,9 @@
       text-shadow: 0 2px 5px #000, 0 0 14px #000;
     }
 
-    #sixSevenText {
-      position: fixed;
-      z-index: 16;
-      top: 28%;
-      left: 50%;
-      display: none;
-      transform: translateX(-50%);
-      color: #000;
-      -webkit-text-stroke: 1px #fff;
-      font-size: clamp(42px, 12vw, 90px);
-      font-weight: 1000;
-      letter-spacing: .06em;
-      text-align: center;
-      white-space: nowrap;
-      text-shadow: 0 4px 20px #000;
-      pointer-events: none;
-    }
-
-    #sixSevenText.visible {
-      display: block;
-      animation: six-seven-pop .25s ease-out;
-    }
-
     @keyframes fade-in {
       from { opacity: 0; }
       to { opacity: 1; }
-    }
-
-    @keyframes six-seven-pop {
-      from { opacity: 0; transform: translate(-50%, 12px) scale(.85); }
-      to { opacity: 1; transform: translate(-50%, 0) scale(1); }
     }
 
     @media (max-width: 480px) {
@@ -257,8 +229,6 @@
       <div class="meme-caption">ABSOLUTE<br>CINEMA</div>
     </div>
   </div>
-
-  <div id="sixSevenText" aria-hidden="true">СИКС СЕВЕН</div>
 
   <div id="controls">
     <button id="startButton" type="button">Включить камеру</button>
@@ -289,8 +259,7 @@
         ✌️ Указательный и средний — стирать.<br>
         ❤️ Две руки: указательные пальцы рядом сверху, большие — снизу.<br>
         🤟 Три сведённых пальца — открыть настройки.<br>
-        🙌 Две раскрытые ладони без движения — Absolute Cinema.<br>
-        🔄 Две раскрытые ладони, движущиеся вверх-вниз по очереди — СИКС СЕВЕН.
+        🙌 Две раскрытые ладони — показать Absolute Cinema.
       </div>
 
       <button class="ready-button" id="readyButton" type="button">Готово</button>
@@ -320,7 +289,6 @@
     const modeMenu = document.getElementById("modeMenu");
     const cinemaMeme = document.getElementById("cinemaMeme");
     const cinemaPhoto = document.getElementById("cinemaPhoto");
-    const sixSevenText = document.getElementById("sixSevenText");
     const colorPicker = document.getElementById("colorPicker");
     const sizePicker = document.getElementById("sizePicker");
     const sizeValue = document.getElementById("sizeValue");
@@ -354,18 +322,10 @@
     let cinemaGestureLatched = false;
     let cinemaTimer = null;
 
-    let sixSevenPreviousY = null;
-    let sixSevenDirection = 0;
-    let sixSevenReversals = 0;
-    let sixSevenLastMotionTime = 0;
-    let sixSevenCooldownUntil = 0;
-    let sixSevenTimer = null;
-
     let heartWasDetected = false;
     let drawingColor = colorPicker.value;
     let brushSize = Number(sizePicker.value);
 
-    // Сглаживание координат: скорость влияет на отзывчивость фильтра.
     const FILTER_MIN_CUTOFF = 1.7;
     const FILTER_BETA = 0.045;
     const FILTER_D_CUTOFF = 1.0;
@@ -432,7 +392,10 @@
         for (let i = 0; i < ordered[h].length; i++) {
           const target = ordered[h][i];
           const filter = handFilters[h][i];
-          const dt = Math.max(1 / 120, Math.min(0.1, (now - filter.time) / 1000));
+          const dt = Math.max(
+            1 / 120,
+            Math.min(0.1, (now - filter.time) / 1000)
+          );
 
           filter.x = filterValue(filter, "x", "dx", target.x, dt);
           filter.y = filterValue(filter, "y", "dy", target.y, dt);
@@ -529,7 +492,6 @@
 
       if (index && !middle && !ring && !pinky) return "draw";
       if (index && middle && !ring && !pinky) return "erase";
-
       return null;
     }
 
@@ -565,83 +527,6 @@
       ).length;
 
       return extended >= 4;
-    }
-
-    function resetSixSevenTracking() {
-      sixSevenPreviousY = null;
-      sixSevenDirection = 0;
-      sixSevenReversals = 0;
-      sixSevenLastMotionTime = 0;
-    }
-
-    function detectSixSevenMotion(hands, now) {
-      if (hands.length < 2 || !hands.every(isOpenHand)) {
-        resetSixSevenTracking();
-        return { active: false, triggered: false };
-      }
-
-      const ordered = [...hands].sort((a, b) => a[0].x - b[0].x);
-      const currentY = ordered.map(hand =>
-        (hand[0].y + hand[5].y + hand[9].y + hand[13].y + hand[17].y) / 5
-      );
-
-      if (!sixSevenPreviousY) {
-        sixSevenPreviousY = currentY;
-        return { active: false, triggered: false };
-      }
-
-      const leftDelta = currentY[0] - sixSevenPreviousY[0];
-      const rightDelta = currentY[1] - sixSevenPreviousY[1];
-      sixSevenPreviousY = currentY;
-
-      const movingOpposite =
-        Math.abs(leftDelta) > 0.0007 &&
-        Math.abs(rightDelta) > 0.0007 &&
-        leftDelta * rightDelta < 0;
-
-      if (!movingOpposite) {
-        if (sixSevenLastMotionTime && now - sixSevenLastMotionTime > 1800) {
-          sixSevenReversals = 0;
-          sixSevenDirection = 0;
-        }
-        return { active: false, triggered: false };
-      }
-
-      const direction = Math.sign(leftDelta);
-
-      if (sixSevenLastMotionTime && now - sixSevenLastMotionTime > 1800) {
-        sixSevenReversals = 0;
-        sixSevenDirection = 0;
-      }
-
-      if (sixSevenDirection && direction !== sixSevenDirection) {
-        sixSevenReversals++;
-      }
-
-      sixSevenDirection = direction;
-      sixSevenLastMotionTime = now;
-
-      const triggered =
-        sixSevenReversals >= 2 &&
-        now >= sixSevenCooldownUntil;
-
-      if (triggered) {
-        sixSevenReversals = 0;
-        sixSevenCooldownUntil = now + 4000;
-      }
-
-      return { active: true, triggered };
-    }
-
-    function showSixSeven() {
-      sixSevenText.classList.add("visible");
-      sixSevenText.setAttribute("aria-hidden", "false");
-
-      clearTimeout(sixSevenTimer);
-      sixSevenTimer = setTimeout(() => {
-        sixSevenText.classList.remove("visible");
-        sixSevenText.setAttribute("aria-hidden", "true");
-      }, 3000);
     }
 
     function showCinemaMeme() {
@@ -1026,6 +911,7 @@
 
         if (heart) {
           if (!heartWasDetected) drawHeart(heart);
+
           heartWasDetected = true;
           previousPoint = null;
           previousMidpoint = null;
@@ -1035,20 +921,6 @@
         }
 
         heartWasDetected = false;
-
-        const sixSeven = detectSixSevenMotion(hands, now);
-
-        if (sixSeven.triggered) showSixSeven();
-
-        if (sixSeven.active) {
-          cinemaGestureFrames = 0;
-          cinemaGestureLatched = false;
-          previousPoint = null;
-          previousMidpoint = null;
-          previousMode = null;
-          setStatus("Двигай раскрытыми ладонями вверх-вниз по очереди");
-          return;
-        }
 
         const cinemaPose =
           hands.length >= 2 &&
@@ -1184,7 +1056,6 @@
     window.addEventListener("beforeunload", () => {
       running = false;
       clearTimeout(cinemaTimer);
-      clearTimeout(sixSevenTimer);
       cameraStream?.getTracks().forEach(track => track.stop());
       landmarker?.close?.();
     });
