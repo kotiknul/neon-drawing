@@ -31,9 +31,7 @@
       transform: scaleX(-1);
     }
 
-    canvas {
-      pointer-events: none;
-    }
+    canvas { pointer-events: none; }
 
     #controls {
       position: fixed;
@@ -53,10 +51,7 @@
       backdrop-filter: blur(10px);
     }
 
-    button,
-    input {
-      touch-action: manipulation;
-    }
+    button, input { touch-action: manipulation; }
 
     button {
       min-height: 44px;
@@ -91,12 +86,9 @@
       padding: 18px;
       background: rgb(0 0 0 / 72%);
       backdrop-filter: blur(5px);
-      touch-action: auto;
     }
 
-    #modeMenu.open {
-      display: grid;
-    }
+    #modeMenu.open { display: grid; }
 
     .menu-card {
       width: min(100%, 440px);
@@ -137,9 +129,7 @@
       accent-color: #00cfff;
     }
 
-    #sizeValue {
-      color: #9ceeff;
-    }
+    #sizeValue { color: #9ceeff; }
 
     .gesture-guide {
       margin: 18px 0;
@@ -173,11 +163,11 @@
       padding: 20px;
       background: rgb(0 0 0 / 90%);
       pointer-events: none;
-      animation: fade-in .2s ease-out;
     }
 
     #cinemaMeme.visible {
       display: grid;
+      animation: fade-in .2s ease-out;
     }
 
     .meme-card {
@@ -218,24 +208,10 @@
     }
 
     @media (max-width: 480px) {
-      #controls {
-        gap: 6px;
-        padding: 8px;
-      }
-
-      #controls button {
-        padding: 0 9px;
-        font-size: 12px;
-      }
-
-      #status {
-        max-width: 125px;
-        font-size: 11px;
-      }
-
-      .menu-card {
-        padding: 16px;
-      }
+      #controls { gap: 6px; padding: 8px; }
+      #controls button { padding: 0 9px; font-size: 12px; }
+      #status { max-width: 125px; font-size: 11px; }
+      .menu-card { padding: 16px; }
     }
   </style>
 </head>
@@ -288,11 +264,9 @@
         🙌 Две раскрытые ладони — показать мем на 3 секунды.
       </div>
 
-      <button class="ready-button" id="readyButton" type="button">
-        Готово
-      </button>
+      <button class="ready-button" id="readyButton" type="button">Готово</button>
       <p class="hover-note">
-        Нажми «Готово» на телефоне или наведи мышь на кнопку на компьютере.
+        Нажми «Готово» на телефоне или наведи на кнопку мышью на компьютере.
       </p>
     </div>
   </section>
@@ -348,9 +322,8 @@
     let drawingColor = colorPicker.value;
     let brushSize = Number(sizePicker.value);
 
-    // Если локального фото нет, пробуем загрузить запасную картинку из интернета.
     cinemaPhoto.addEventListener("error", () => {
-      if (cinemaPhoto.dataset.fallbackUsed) return;
+      if (cinemaPhoto.dataset.fallbackUsed === "true") return;
 
       cinemaPhoto.dataset.fallbackUsed = "true";
       cinemaPhoto.src =
@@ -391,7 +364,7 @@
       }
     }
 
-    addEventListener("resize", resizeCanvases);
+    window.addEventListener("resize", resizeCanvases);
     resizeCanvases();
 
     function mapPoint(point) {
@@ -442,7 +415,9 @@
             target.x - current.x,
             target.y - current.y
           );
-          const blend = Math.min(0.72, 0.24 + movement * 3);
+
+          // Больший blend уменьшает отставание скелета за рукой.
+          const blend = Math.min(0.95, 0.72 + movement * 4);
 
           current.x += (target.x - current.x) * blend;
           current.y += (target.y - current.y) * blend;
@@ -495,14 +470,13 @@
     }
 
     function isOpenHand(hand) {
-      const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+      const distance = (a, b) =>
+        Math.hypot(a.x - b.x, a.y - b.y);
+
       const wrist = hand[0];
 
       const extendedFingers = [
-        [8, 6],
-        [12, 10],
-        [16, 14],
-        [20, 18]
+        [8, 6], [12, 10], [16, 14], [20, 18]
       ].filter(([tip, joint]) =>
         distance(hand[tip], wrist) > distance(hand[joint], wrist) * 1.02
       ).length;
@@ -615,15 +589,15 @@
     function detectHeart(hands) {
       if (hands.length < 2) return null;
 
-      const orderedHands = hands
+      const ordered = hands
         .map(hand => ({ hand, wrist: mapPoint(hand[0]) }))
         .filter(item => item.wrist)
         .sort((a, b) => a.wrist.x - b.wrist.x);
 
-      if (orderedHands.length < 2) return null;
+      if (ordered.length < 2) return null;
 
-      const left = orderedHands[0].hand;
-      const right = orderedHands[1].hand;
+      const left = ordered[0].hand;
+      const right = ordered[1].hand;
 
       const leftIndex = mapPoint(left[8]);
       const rightIndex = mapPoint(right[8]);
@@ -705,7 +679,6 @@
       setStatus("Меню закрыто");
     }
 
-    // Закрыть наведением мыши на компьютере.
     readyButton.addEventListener("pointerenter", event => {
       if (
         event.pointerType === "mouse" &&
@@ -715,11 +688,8 @@
       }
     });
 
-    // Закрыть нажатием или касанием на телефоне.
     readyButton.addEventListener("click", () => {
-      if (modeMenu.classList.contains("open")) {
-        closeMenu();
-      }
+      if (modeMenu.classList.contains("open")) closeMenu();
     });
 
     colorPicker.addEventListener("input", () => {
@@ -740,7 +710,6 @@
 
     function processFrame() {
       if (!running) return;
-
       requestAnimationFrame(processFrame);
 
       try {
@@ -748,9 +717,7 @@
           !landmarker ||
           video.readyState < 2 ||
           video.currentTime === lastVideoTime
-        ) {
-          return;
-        }
+        ) return;
 
         lastVideoTime = video.currentTime;
 
@@ -781,9 +748,7 @@
         const heart = detectHeart(hands);
 
         if (heart) {
-          if (!heartWasDetected) {
-            drawHeart(heart);
-          }
+          if (!heartWasDetected) drawHeart(heart);
 
           heartWasDetected = true;
           previousPoint = null;
@@ -811,10 +776,10 @@
           previousMode = null;
           setStatus("ABSOLUTE CINEMA");
           return;
-        } else {
-          cinemaGestureFrames = 0;
-          cinemaGestureLatched = false;
         }
+
+        cinemaGestureFrames = 0;
+        cinemaGestureLatched = false;
 
         if (!hands.length) {
           setStatus("Покажи руку в камеру");
@@ -911,7 +876,7 @@
             }
           });
         } catch (gpuError) {
-          console.warn("GPU недоступен, переключаюсь на CPU:", gpuError);
+          console.warn("GPU недоступен, использую CPU:", gpuError);
 
           landmarker = await HandLandmarker.createFromOptions(vision, {
             ...options,
@@ -934,10 +899,11 @@
 
         cameraStream?.getTracks().forEach(track => track.stop());
         cameraStream = null;
+        video.srcObject = null;
       }
     });
 
-    addEventListener("beforeunload", () => {
+    window.addEventListener("beforeunload", () => {
       running = false;
       clearTimeout(cinemaTimer);
       cameraStream?.getTracks().forEach(track => track.stop());
