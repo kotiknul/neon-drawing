@@ -209,13 +209,14 @@
       left: 50%;
       display: none;
       transform: translateX(-50%);
-      color: #fff;
+      color: #000;
+      -webkit-text-stroke: 1px #fff;
       font-size: clamp(42px, 12vw, 90px);
       font-weight: 1000;
       letter-spacing: .06em;
       text-align: center;
       white-space: nowrap;
-      text-shadow: 0 0 12px #00cfff, 0 4px 20px #000;
+      text-shadow: 0 4px 20px #000;
       pointer-events: none;
     }
 
@@ -302,10 +303,13 @@
   </section>
 
   <script type="module">
-    import {
-      FilesetResolver,
-      HandLandmarker
-    } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs";
+    const MEDIAPIPE_VERSION = "0.10.21";
+    const WASM_URL =
+      `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}/wasm`;
+    const BUNDLE_URL =
+      `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}/vision_bundle.mjs`;
+    const MODEL_URL =
+      "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
 
     const video = document.getElementById("camera");
     const drawingCanvas = document.getElementById("drawing");
@@ -333,6 +337,8 @@
       [0,17]
     ];
 
+    let FilesetResolver = null;
+    let HandLandmarker = null;
     let landmarker = null;
     let cameraStream = null;
     let running = false;
@@ -360,10 +366,24 @@
     let drawingColor = colorPicker.value;
     let brushSize = Number(sizePicker.value);
 
-    // Если локальное фото отсутствует, пробуем загрузить его из сети.
+    function setStatus(message) {
+      status.textContent = message;
+    }
+
+    function withTimeout(promise, milliseconds, message) {
+      let timer;
+
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(message)), milliseconds);
+      });
+
+      return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+    }
+
+    // Сначала пробуем локальное фото, затем — сетевой вариант.
     cinemaPhoto.addEventListener("error", () => {
       if (cinemaPhoto.dataset.fallbackUsed === "true") {
-        cinemaPhoto.alt = "Фото не загрузилось. Проверь absolute-cinema.jpg.";
+        cinemaPhoto.alt = "Фото не загрузилось. Проверь файл absolute-cinema.jpg.";
         return;
       }
 
@@ -371,10 +391,6 @@
       cinemaPhoto.src =
         "https://i.kym-cdn.com/photos/images/newsfeed/002/693/300/817.jpg";
     });
-
-    function setStatus(message) {
-      status.textContent = message;
-    }
 
     function resizeCanvases() {
       const width = innerWidth;
@@ -535,8 +551,6 @@
       }
 
       const ordered = [...hands].sort((a, b) => a[0].x - b[0].x);
-
-      // Центр ладони считаем по нескольким точкам, а не по одному запястью.
       const currentY = ordered.map(hand =>
         (hand[0].y + hand[5].y + hand[9].y + hand[13].y + hand[17].y) / 5
       );
@@ -550,10 +564,9 @@
       const rightDelta = currentY[1] - sixSevenPreviousY[1];
       sixSevenPreviousY = currentY;
 
-      // Руки должны двигаться в противоположных направлениях.
       const movingOpposite =
-        Math.abs(leftDelta) > 0.0018 &&
-        Math.abs(rightDelta) > 0.0018 &&
+        Math.abs(leftDelta) > 0.0007 &&
+        Math.abs(rightDelta) > 0.0007 &&
         leftDelta * rightDelta < 0;
 
       if (!movingOpposite) {
@@ -561,6 +574,7 @@
           sixSevenReversals = 0;
           sixSevenDirection = 0;
         }
+
         return { active: false, triggered: false };
       }
 
@@ -780,6 +794,7 @@
       setStatus("Меню закрыто");
     }
 
+    // Компьютер: закрыть наведением мыши.
     readyButton.addEventListener("pointerenter", event => {
       if (
         event.pointerType === "mouse" &&
@@ -789,6 +804,7 @@
       }
     });
 
+    // Телефон и компьютер: закрыть нажатием/касанием.
     readyButton.addEventListener("click", () => {
       if (modeMenu.classList.contains("open")) closeMenu();
     });
@@ -808,6 +824,100 @@
       previousMode = null;
       setStatus("Рисунок очищен");
     });
+
+    async function loadHandModel() {
+      setStatus("Подключаю библиотеку распознавания…");
+
+      const visionModule = await withTimeout(
+        import(BUNDLE_URL),
+        30000,
+        "Не загрузилась библиотека распознавания за 30 секунд. Проверь интернет и обнови страницу."
+      );
+
+      FilesetResolver = visionModule.FilesetResolver;
+      HandLandmarker = visionModule.HandLandmarker;
+
+      setStatus("Загружаю WASM-файлы…");
+
+      const vision = await withTimeout(
+        FilesetResolver.forVisionTasks(WASM_URL),
+        30000,
+        "Не загрузились WASM-файлы за 30 секунд. Проверь интернет."
+      );
+
+      setStatus("Скачиваю модель руки…");
+
+      const controller = new AbortController();
+      const downloadTimer = setTimeout(() => controller.abort(), 60000);
+
+      let modelBytes;
+
+      try {
+        const response = await fetch(MODEL_URL, {
+          signal: controller.signal,
+          cache: "force-cache"
+        });
+
+        if (!response.ok) {
+          throw new Error(`Сервер модели ответил HTTP ${response.status}.`);
+        }
+
+        modelBytes = new Uint8Array(await response.arrayBuffer());
+
+        if (modelBytes.length < 100000) {
+          throw new Error("Скачанный файл модели слишком маленький или повреждён.");
+        }
+      } catch (error) {
+        if (error.name === "AbortError") {
+          throw new Error("Модель не скачалась за 60 секунд. Проверь интернет.");
+        }
+
+        throw error;
+      } finally {
+        clearTimeout(downloadTimer);
+      }
+
+      const isMobile =
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+        (navigator.maxTouchPoints > 1 && /Mac/i.test(navigator.platform));
+
+      const options = {
+        runningMode: "VIDEO",
+        numHands: 2,
+        minHandDetectionConfidence: 0.55,
+        minHandPresenceConfidence: 0.55,
+        minTrackingConfidence: 0.55
+      };
+
+      async function createWithDelegate(delegate) {
+        return withTimeout(
+          HandLandmarker.createFromOptions(vision, {
+            ...options,
+            baseOptions: {
+              modelAssetBuffer: modelBytes.slice(),
+              delegate
+            }
+          }),
+          45000,
+          `Распознавание не запустилось через ${delegate} за 45 секунд. Попробуй обновить страницу.`
+        );
+      }
+
+      if (isMobile) {
+        setStatus("Запускаю распознавание на телефоне…");
+        return createWithDelegate("CPU");
+      }
+
+      setStatus("Запускаю распознавание…");
+
+      try {
+        return await createWithDelegate("GPU");
+      } catch (gpuError) {
+        console.warn("GPU не запустился, пробую CPU:", gpuError);
+        setStatus("GPU недоступен — запускаю через CPU…");
+        return createWithDelegate("CPU");
+      }
+    }
 
     function processFrame() {
       if (!running) return;
@@ -865,8 +975,6 @@
         if (sixSeven.triggered) showSixSeven();
 
         if (sixSeven.active) {
-          // Пока руки двигаются в жесте 67, не включаем Absolute Cinema
-          // и не рисуем случайные линии.
           cinemaGestureFrames = 0;
           cinemaGestureLatched = false;
           previousPoint = null;
@@ -883,7 +991,6 @@
         if (cinemaPose) {
           cinemaGestureFrames++;
 
-          // Небольшая пауза отличает неподвижный жест от движения 67.
           if (cinemaGestureFrames >= 18 && !cinemaGestureLatched) {
             cinemaGestureLatched = true;
             showCinemaMeme();
@@ -892,17 +999,16 @@
           previousPoint = null;
           previousMode = null;
 
-          if (!cinemaGestureLatched) {
-            setStatus("Две раскрытые ладони — Absolute Cinema");
-          } else {
-            setStatus("ABSOLUTE CINEMA");
-          }
-
+          setStatus(
+            cinemaGestureLatched
+              ? "ABSOLUTE CINEMA"
+              : "Две раскрытые ладони — Absolute Cinema"
+          );
           return;
-        } else {
-          cinemaGestureFrames = 0;
-          cinemaGestureLatched = false;
         }
+
+        cinemaGestureFrames = 0;
+        cinemaGestureLatched = false;
 
         if (!hands.length) {
           setStatus("Покажи руку в камеру");
@@ -927,11 +1033,13 @@
 
         if (mode === "draw") {
           setStatus("Рисуешь");
+
           if (previousPoint && previousMode === "draw") {
             drawNeonLine(draw, previousPoint, point, brushSize);
           }
         } else {
           setStatus("Стираешь");
+
           if (previousPoint && previousMode === "erase") {
             eraseLine(previousPoint, point);
           } else {
@@ -942,20 +1050,22 @@
         previousPoint = { ...point };
         previousMode = mode;
       } catch (error) {
-        console.error("Ошибка распознавания:", error);
-        setStatus(`Ошибка: ${error.message || error}`);
+        console.error("Ошибка обработки кадра:", error);
+        setStatus(`Ошибка распознавания: ${error.message || error}`);
         previousPoint = null;
         previousMode = null;
       }
     }
 
     startButton.addEventListener("click", async () => {
+      if (running) return;
+
       startButton.disabled = true;
       setStatus("Запрашиваю доступ к камере…");
 
       try {
         if (!navigator.mediaDevices?.getUserMedia) {
-          throw new Error("Открой страницу через HTTPS или localhost.");
+          throw new Error("Камера недоступна. Открой сайт через HTTPS.");
         }
 
         cameraStream = await navigator.mediaDevices.getUserMedia({
@@ -971,49 +1081,26 @@
         video.srcObject = cameraStream;
         await video.play();
 
-        setStatus("Загружаю распознавание руки…");
-
-        const vision = await FilesetResolver.forVisionTasks(
-          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm"
-        );
-
-        const options = {
-          runningMode: "VIDEO",
-          numHands: 2,
-          minHandDetectionConfidence: 0.55,
-          minHandPresenceConfidence: 0.55,
-          minTrackingConfidence: 0.55
-        };
-
-        const modelAssetPath =
-          "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
-
-        try {
-          landmarker = await HandLandmarker.createFromOptions(vision, {
-            ...options,
-            baseOptions: { modelAssetPath, delegate: "GPU" }
-          });
-        } catch (gpuError) {
-          console.warn("GPU недоступен, использую CPU:", gpuError);
-
-          landmarker = await HandLandmarker.createFromOptions(vision, {
-            ...options,
-            baseOptions: { modelAssetPath, delegate: "CPU" }
-          });
-        }
+        landmarker = await loadHandModel();
 
         running = true;
         startButton.textContent = "Камера включена";
-        setStatus("1 палец — рисовать, 2 — стирать");
+        setStatus("Готово: 1 палец — рисовать, 2 — стирать");
         requestAnimationFrame(processFrame);
       } catch (error) {
-        console.error(error);
-        setStatus(`Не удалось запустить: ${error.message || error}`);
+        console.error("Не удалось запустить:", error);
+
+        const message = error.name === "NotAllowedError"
+          ? "Разреши доступ к камере в настройках браузера."
+          : (error.message || "Неизвестная ошибка запуска.");
+
+        setStatus(message);
         startButton.disabled = false;
         startButton.textContent = "Попробовать снова";
 
         cameraStream?.getTracks().forEach(track => track.stop());
         cameraStream = null;
+        video.srcObject = null;
       }
     });
 
