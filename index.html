@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Неоновое рисование</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    #camera,
+    canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #camera {
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+
+    canvas {
+      pointer-events: none;
+    }
+
+    #controls {
+      position: fixed;
+      z-index: 5;
+      left: 50%;
+      bottom: max(14px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: calc(100% - 20px);
+      padding: 9px;
+      border: 1px solid #164d68;
+      border-radius: 14px;
+      background: rgb(0 0 0 / 82%);
+      box-shadow: 0 0 18px rgb(0 180 255 / 25%);
+      backdrop-filter: blur(10px);
+    }
+
+    button {
+      min-height: 42px;
+      padding: 0 12px;
+      border: 1px solid #087fa8;
+      border-radius: 10px;
+      background: #03131b;
+      color: #80eaff;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: default;
+    }
+
+    #status {
+      max-width: 220px;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    #modeMenu {
+      position: fixed;
+      z-index: 20;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgb(0 0 0 / 68%);
+      backdrop-filter: blur(5px);
+    }
+
+    #modeMenu.open {
+      display: grid;
+    }
+
+    .menu-card {
+      width: min(100%, 440px);
+      padding: 20px;
+      border: 1px solid #087fa8;
+      border-radius: 18px;
+      background: #071117;
+      box-shadow: 0 0 28px rgb(0 190 255 / 25%);
+    }
+
+    .menu-card h2 {
+      margin: 0 0 18px;
+      color: #9ceeff;
+      font-size: 21px;
+    }
+
+    .setting {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      align-items: center;
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    #colorPicker {
+      width: 56px;
+      height: 42px;
+      padding: 3px;
+      border: 1px solid #087fa8;
+      border-radius: 9px;
+      background: #03131b;
+      cursor: pointer;
+    }
+
+    #sizePicker {
+      width: 100%;
+      accent-color: #00cfff;
+    }
+
+    #sizeValue {
+      color: #9ceeff;
+    }
+
+    .gesture-guide {
+      margin: 18px 0;
+      padding: 12px;
+      border-radius: 12px;
+      background: #0b1c24;
+      color: #d8f8ff;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .ready-button {
+      width: 100%;
+      min-height: 48px;
+      font-size: 16px;
+    }
+
+    .hover-note {
+      margin: 10px 0 0;
+      color: #88aab4;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    #cinemaMeme {
+      position: fixed;
+      z-index: 15;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: rgb(0 0 0 / 88%);
+      pointer-events: none;
+      animation: fade-in .2s ease-out;
+    }
+
+    #cinemaMeme.visible {
+      display: grid;
+    }
+
+    .meme-card {
+      position: relative;
+      width: min(88vw, 560px);
+      max-height: 82dvh;
+      overflow: hidden;
+      background: #111;
+      box-shadow: 0 0 35px rgb(255 255 255 / 20%);
+    }
+
+    .meme-card img {
+      display: block;
+      width: 100%;
+      max-height: 76dvh;
+      object-fit: contain;
+      filter: grayscale(1);
+    }
+
+    .meme-caption {
+      position: absolute;
+      top: 5%;
+      right: 4%;
+      left: 4%;
+      color: #fff;
+      font-family: Georgia, serif;
+      font-size: clamp(27px, 8vw, 58px);
+      font-weight: 900;
+      letter-spacing: .04em;
+      line-height: 1;
+      text-align: center;
+      text-shadow: 0 2px 5px #000, 0 0 14px #000;
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @media (max-width: 480px) {
+      #controls {
+        gap: 6px;
+        padding: 8px;
+      }
+
+      #controls button {
+        padding: 0 9px;
+        font-size: 12px;
+      }
+
+      #status {
+        max-width: 130px;
+        font-size: 11px;
+      }
+
+      .menu-card {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <video id="camera" autoplay muted playsinline></video>
+  <canvas id="drawing"></canvas>
+  <canvas id="overlay"></canvas>
+
+  <div id="cinemaMeme" aria-hidden="true">
+    <div class="meme-card">
+      <img
+        id="cinemaPhoto"
+        src="./absolute-cinema.jpg"
+        alt="Мем Absolute Cinema"
+      >
+      <div class="meme-caption">ABSOLUTE<br>CINEMA</div>
+    </div>
+  </div>
+
+  <div id="controls">
+    <button id="startButton">Включить камеру</button>
+    <button id="clearButton">Очистить</button>
+    <span id="status">Нажми «Включить камеру»</span>
+  </div>
+
+  <section id="modeMenu" aria-label="Настройки рисования">
+    <div class="menu-card">
+      <h2>Настройки рисования</h2>
+
+      <div class="setting">
+        <label for="colorPicker">Цвет</label>
+        <input id="colorPicker" type="color" value="#00cfff">
+      </div>
+
+      <div class="setting">
+        <label for="sizePicker">Размер</label>
+        <div>
+          <input id="sizePicker" type="range" min="2" max="30" value="7">
+          <span id="sizeValue">7 px</span>
+        </div>
+      </div>
+
+      <div class="gesture-guide">
+        <strong>Жесты:</strong><br>
+        ☝️ Один указательный палец — рисовать.<br>
+        ✌️ Указательный и средний пальцы — стирать.<br>
+        ❤️ Две руки: указательные пальцы рядом сверху, большие — снизу.<br>
+        🤟 Три сведённых пальца — открыть настройки.<br>
+        🙌 Две раскрытые ладони — показать мем на 3 секунды.
+      </div>
+
+      <button class="ready-button" id="readyButton">Готово</button>
+      <p class="hover-note">Наведи мышь на «Готово», чтобы закрыть меню.</p>
+    </div>
+  </section>
+
+  <script type="module">
+    import {
+      FilesetResolver,
+      HandLandmarker
+    } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs";
+
+    const video = document.getElementById("camera");
+    const drawingCanvas = document.getElementById("drawing");
+    const overlayCanvas = document.getElementById("overlay");
+    const draw = drawingCanvas.getContext("2d");
+    const overlay = overlayCanvas.getContext("2d");
+    const status = document.getElementById("status");
+    const startButton = document.getElementById("startButton");
+    const modeMenu = document.getElementById("modeMenu");
+    const cinemaMeme = document.getElementById("cinemaMeme");
+    const cinemaPhoto = document.getElementById("cinemaPhoto");
+    const colorPicker = document.getElementById("colorPicker");
+    const sizePicker = document.getElementById("sizePicker");
+    const sizeValue = document.getElementById("sizeValue");
+    const readyButton = document.getElementById("readyButton");
+
+    const CONNECTIONS = [
+      [0,1], [1,2], [2,3], [3,4],
+      [0,5], [5,6], [6,7], [7,8],
+      [5,9], [9,10], [10,11], [11,12],
+      [9,13], [13,14], [14,15], [15,16],
+      [13,17], [17,18], [18,19], [19,20],
+      [0,17]
+    ];
+
+    let landmarker = null;
+    let cameraStream = null;
+    let running = false;
+    let lastVideoTime = -1;
+
+    let smoothedHands = [];
+    let previousPoint = null;
+    let previousMode = null;
+
+    let menuOpen = false;
+    let menuGestureFrames = 0;
+    let menuGestureLatched = false;
+
+    let cinemaGestureFrames = 0;
+    let cinemaGestureLatched = false;
+    let cinemaTimer = null;
+
+    let heartWasDetected = false;
+    let drawingColor = colorPicker.value;
+    let brushSize = Number(sizePicker.value);
+
+    // Если локального фото нет, пробуем загрузить изображение из интернета.
+    cinemaPhoto.addEventListener("error", () => {
+      if (cinemaPhoto.dataset.fallbackUsed) return;
+
+      cinemaPhoto.dataset.fallbackUsed = "true";
+      cinemaPhoto.src =
+        "https://i.kym-cdn.com/photos/images/newsfeed/002/693/300/817.jpg";
+    });
+
+    function setStatus(message) {
+      status.textContent = message;
+    }
+
+    function resizeCanvases() {
+      const width = innerWidth;
+      const height = innerHeight;
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+
+      const saved = document.createElement("canvas");
+      saved.width = drawingCanvas.width;
+      saved.height = drawingCanvas.height;
+
+      if (saved.width && saved.height) {
+        saved.getContext("2d").drawImage(drawingCanvas, 0, 0);
+      }
+
+      for (const canvas of [drawingCanvas, overlayCanvas]) {
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        canvas.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      if (saved.width && saved.height) {
+        draw.drawImage(
+          saved,
+          0, 0, saved.width, saved.height,
+          0, 0, width, height
+        );
+      }
+    }
+
+    addEventListener("resize", resizeCanvases);
+    resizeCanvases();
+
+    function mapPoint(point) {
+      if (!video.videoWidth || !video.videoHeight) return null;
+
+      const width = innerWidth;
+      const height = innerHeight;
+      const scale = Math.max(
+        width / video.videoWidth,
+        height / video.videoHeight
+      );
+
+      const shownWidth = video.videoWidth * scale;
+      const shownHeight = video.videoHeight * scale;
+      const cropX = (shownWidth - width) / 2;
+      const cropY = (shownHeight - height) / 2;
+
+      return {
+        x: width - (point.x * shownWidth - cropX),
+        y: point.y * shownHeight - cropY
+      };
+    }
+
+    function smoothHands(hands) {
+      if (!hands.length) {
+        smoothedHands = [];
+        return [];
+      }
+
+      const ordered = [...hands].sort((a, b) => a[0].x - b[0].x);
+
+      if (smoothedHands.length !== ordered.length) {
+        smoothedHands = ordered.map(hand =>
+          hand.map(point => ({
+            x: point.x,
+            y: point.y,
+            z: point.z || 0
+          }))
+        );
+        return smoothedHands;
+      }
+
+      for (let h = 0; h < ordered.length; h++) {
+        for (let i = 0; i < ordered[h].length; i++) {
+          const target = ordered[h][i];
+          const current = smoothedHands[h][i];
+          const distance = Math.hypot(
+            target.x - current.x,
+            target.y - current.y
+          );
+          const blend = Math.min(0.72, 0.24 + distance * 3);
+
+          current.x += (target.x - current.x) * blend;
+          current.y += (target.y - current.y) * blend;
+          current.z += ((target.z || 0) - current.z) * blend;
+        }
+      }
+
+      return smoothedHands;
+    }
+
+    function fingerUp(hand, tip, joint) {
+      return hand[tip].y < hand[joint].y - 0.015;
+    }
+
+    function getDrawingMode(hand) {
+      const index = fingerUp(hand, 8, 6);
+      const middle = fingerUp(hand, 12, 10);
+      const ring = fingerUp(hand, 16, 14);
+      const pinky = fingerUp(hand, 20, 18);
+
+      if (index && !middle && !ring && !pinky) return "draw";
+      if (index && middle && !ring && !pinky) return "erase";
+
+      return null;
+    }
+
+    function hasMenuPose(hand) {
+      const index = fingerUp(hand, 8, 6);
+      const middle = fingerUp(hand, 12, 10);
+      const ring = fingerUp(hand, 16, 14);
+      const pinky = fingerUp(hand, 20, 18);
+
+      if (!index || !middle || !ring || pinky) return false;
+
+      const distance = (a, b) =>
+        Math.hypot(
+          a.x - b.x,
+          a.y - b.y,
+          (a.z || 0) - (b.z || 0)
+        );
+
+      const palmScale = distance(hand[0], hand[9]);
+      if (palmScale < 0.0001) return false;
+
+      return (
+        distance(hand[8], hand[12]) < palmScale * 0.65 &&
+        distance(hand[12], hand[16]) < palmScale * 0.65 &&
+        distance(hand[8], hand[16]) < palmScale * 0.9
+      );
+    }
+
+    // Обнаруживает раскрытую ладонь; большой палец необязателен.
+    function isOpenHand(hand) {
+      const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+      const wrist = hand[0];
+
+      const extendedFingers = [
+        [8, 6],
+        [12, 10],
+        [16, 14],
+        [20, 18]
+      ].filter(([tip, joint]) =>
+        distance(hand[tip], wrist) > distance(hand[joint], wrist) * 1.02
+      ).length;
+
+      return extendedFingers >= 4;
+    }
+
+    function showCinemaMeme() {
+      cinemaMeme.classList.add("visible");
+      cinemaMeme.setAttribute("aria-hidden", "false");
+
+      clearTimeout(cinemaTimer);
+      cinemaTimer = setTimeout(() => {
+        cinemaMeme.classList.remove("visible");
+        cinemaMeme.setAttribute("aria-hidden", "true");
+      }, 3000);
+    }
+
+    function drawNeonLine(context, from, to, width, color = drawingColor) {
+      context.save();
+      context.beginPath();
+      context.moveTo(from.x, from.y);
+      context.lineTo(to.x, to.y);
+      context.lineCap = "round";
+      context.lineJoin = "round";
+
+      context.strokeStyle = color;
+      context.lineWidth = width;
+      context.shadowColor = color;
+      context.shadowBlur = Math.max(8, width * 3);
+      context.stroke();
+
+      context.beginPath();
+      context.moveTo(from.x, from.y);
+      context.lineTo(to.x, to.y);
+      context.strokeStyle = "#e8fcff";
+      context.lineWidth = Math.max(1.5, width * 0.24);
+      context.shadowBlur = 4;
+      context.stroke();
+
+      context.restore();
+    }
+
+    function eraseLine(from, to) {
+      draw.save();
+      draw.globalCompositeOperation = "destination-out";
+      draw.beginPath();
+      draw.moveTo(from.x, from.y);
+      draw.lineTo(to.x, to.y);
+      draw.lineCap = "round";
+      draw.lineJoin = "round";
+      draw.lineWidth = Math.max(24, brushSize * 4);
+      draw.stroke();
+      draw.restore();
+    }
+
+    function drawSkeleton(hands) {
+      overlay.clearRect(0, 0, innerWidth, innerHeight);
+
+      for (const hand of hands) {
+        for (const [a, b] of CONNECTIONS) {
+          const first = mapPoint(hand[a]);
+          const second = mapPoint(hand[b]);
+          if (!first || !second) continue;
+
+          overlay.beginPath();
+          overlay.moveTo(first.x, first.y);
+          overlay.lineTo(second.x, second.y);
+          overlay.lineCap = "round";
+          overlay.lineJoin = "round";
+          overlay.strokeStyle = "rgba(0, 205, 255, .95)";
+          overlay.lineWidth = 3;
+          overlay.shadowColor = "#00bfff";
+          overlay.shadowBlur = 9;
+          overlay.stroke();
+        }
+
+        for (const landmark of hand) {
+          const point = mapPoint(landmark);
+          if (!point) continue;
+
+          overlay.beginPath();
+          overlay.arc(point.x, point.y, 3, 0, Math.PI * 2);
+          overlay.fillStyle = "#eaffff";
+          overlay.shadowColor = "#00bfff";
+          overlay.shadowBlur = 9;
+          overlay.fill();
+        }
+      }
+
+      overlay.shadowBlur = 0;
+    }
+
+    function drawCursor(point, mode) {
+      const radius = mode === "erase"
+        ? Math.max(18, brushSize * 2)
+        : Math.max(8, brushSize);
+
+      overlay.save();
+      overlay.beginPath();
+      overlay.arc(point.x, point.y, radius, 0, Math.PI * 2);
+      overlay.lineWidth = 2;
+      overlay.strokeStyle = mode === "erase" ? "#ff72d2" : drawingColor;
+      overlay.shadowColor = mode === "erase" ? "#ff35bd" : drawingColor;
+      overlay.shadowBlur = 16;
+      overlay.stroke();
+      overlay.restore();
+    }
+
+    function detectHeart(hands) {
+      if (hands.length < 2) return null;
+
+      const sorted = hands
+        .map(hand => ({ hand, wrist: mapPoint(hand[0]) }))
+        .filter(item => item.wrist)
+        .sort((a, b) => a.wrist.x - b.wrist.x);
+
+      if (sorted.length < 2) return null;
+
+      const left = sorted[0].hand;
+      const right = sorted[1].hand;
+
+      const leftIndex = mapPoint(left[8]);
+      const rightIndex = mapPoint(right[8]);
+      const leftThumb = mapPoint(left[4]);
+      const rightThumb = mapPoint(right[4]);
+      const leftWrist = mapPoint(left[0]);
+      const rightWrist = mapPoint(right[0]);
+
+      if (!leftIndex || !rightIndex || !leftThumb || !rightThumb ||
+          !leftWrist || !rightWrist) {
+        return null;
+      }
+
+      const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+      const wrists = distance(leftWrist, rightWrist);
+
+      const isHeart =
+        wrists > 60 &&
+        distance(leftIndex, rightIndex) < wrists * 0.55 &&
+        distance(leftThumb, rightThumb) < wrists * 0.55 &&
+        (leftIndex.y + rightIndex.y) / 2 <
+          (leftThumb.y + rightThumb.y) / 2 + 20;
+
+      if (!isHeart) return null;
+
+      return {
+        x: (
+          leftIndex.x + rightIndex.x +
+          leftThumb.x + rightThumb.x
+        ) / 4,
+        y: (
+          leftIndex.y + rightIndex.y +
+          leftThumb.y + rightThumb.y
+        ) / 4,
+        size: Math.max(90, Math.min(260, wrists * 0.8))
+      };
+    }
+
+    function drawHeart(center) {
+      const points = [];
+      const size = center.size;
+
+      for (let t = 0; t <= Math.PI * 2; t += 0.035) {
+        const x = 16 * Math.sin(t) ** 3;
+        const y =
+          13 * Math.cos(t) -
+          5 * Math.cos(2 * t) -
+          2 * Math.cos(3 * t) -
+          Math.cos(4 * t);
+
+        points.push({
+          x: center.x + (x / 34) * size,
+          y: center.y - (y / 34) * size * 0.85
+        });
+      }
+
+      for (let i = 1; i < points.length; i++) {
+        drawNeonLine(
+          draw,
+          points[i - 1],
+          points[i],
+          Math.max(4, brushSize)
+        );
+      }
+    }
+
+    function openMenu() {
+      modeMenu.classList.add("open");
+      previousPoint = null;
+      previousMode = null;
+      setStatus("Меню открыто");
+    }
+
+    function closeMenu() {
+      modeMenu.classList.remove("open");
+      previousPoint = null;
+      previousMode = null;
+      setStatus("Меню закрыто");
+    }
+
+    readyButton.addEventListener("pointerenter", event => {
+      if (event.pointerType === "mouse" && modeMenu.classList.contains("open")) {
+        closeMenu();
+      }
+    });
+
+    colorPicker.addEventListener("input", () => {
+      drawingColor = colorPicker.value;
+    });
+
+    sizePicker.addEventListener("input", () => {
+      brushSize = Number(sizePicker.value);
+      sizeValue.textContent = `${brushSize} px`;
+    });
+
+    document.getElementById("clearButton").addEventListener("click", () => {
+      draw.clearRect(0, 0, innerWidth, innerHeight);
+      previousPoint = null;
+      previousMode = null;
+      setStatus("Рисунок очищен");
+    });
+
+    function processFrame() {
+      if (!running) return;
+
+      requestAnimationFrame(processFrame);
+
+      try {
+        if (
+          !landmarker ||
+          video.readyState < 2 ||
+          video.currentTime === lastVideoTime
+        ) {
+          return;
+        }
+
+        lastVideoTime = video.currentTime;
+
+        const result = landmarker.detectForVideo(video, performance.now());
+        const hands = smoothHands(result.landmarks || []);
+
+        drawSkeleton(hands);
+
+        const menuPose = hands.some(hasMenuPose);
+
+        if (menuPose) {
+          menuGestureFrames++;
+
+          if (menuGestureFrames >= 8 && !menuGestureLatched) {
+            menuGestureLatched = true;
+            openMenu();
+          }
+        } else {
+          menuGestureFrames = 0;
+          menuGestureLatched = false;
+        }
+
+        if (modeMenu.classList.contains("open")) {
+          setStatus("Меню открыто — наведи мышь на «Готово»");
+          return;
+        }
+
+        const heart = detectHeart(hands);
+
+        if (heart) {
+          if (!heartWasDetected) drawHeart(heart);
+          heartWasDetected = true;
+          previousPoint = null;
+          previousMode = null;
+          setStatus("Сердце нарисовано");
+          return;
+        }
+
+        heartWasDetected = false;
+
+        const cinemaPose =
+          hands.length >= 2 &&
+          isOpenHand(hands[0]) &&
+          isOpenHand(hands[1]);
+
+        if (cinemaPose) {
+          cinemaGestureFrames++;
+
+          if (cinemaGestureFrames >= 8 && !cinemaGestureLatched) {
+            cinemaGestureLatched = true;
+            showCinemaMeme();
+          }
+
+          previousPoint = null;
+          previousMode = null;
+          setStatus("ABSOLUTE CINEMA");
+          return;
+        } else {
+          cinemaGestureFrames = 0;
+          cinemaGestureLatched = false;
+        }
+
+        if (!hands.length) {
+          setStatus("Покажи руку в камеру");
+          previousPoint = null;
+          previousMode = null;
+          return;
+        }
+
+        const mode = getDrawingMode(hands[0]);
+
+        if (!mode) {
+          setStatus("1 палец — рисовать, 2 — стирать");
+          previousPoint = null;
+          previousMode = null;
+          return;
+        }
+
+        const point = mapPoint(hands[0][8]);
+        if (!point) return;
+
+        drawCursor(point, mode);
+
+        if (mode === "draw") {
+          setStatus("Рисуешь");
+          if (previousPoint && previousMode === "draw") {
+            drawNeonLine(draw, previousPoint, point, brushSize);
+          }
+        } else {
+          setStatus("Стираешь");
+          if (previousPoint && previousMode === "erase") {
+            eraseLine(previousPoint, point);
+          } else {
+            eraseLine(point, point);
+          }
+        }
+
+        previousPoint = { ...point };
+        previousMode = mode;
+      } catch (error) {
+        console.error("Ошибка распознавания:", error);
+        setStatus(`Ошибка: ${error.message || error}`);
+        previousPoint = null;
+        previousMode = null;
+      }
+    }
+
+    startButton.addEventListener("click", async () => {
+      startButton.disabled = true;
+      setStatus("Запрашиваю доступ к камере…");
+
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error("Открой страницу через HTTPS или localhost.");
+        }
+
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            facingMode: "user",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            frameRate: { ideal: 30 }
+          }
+        });
+
+        video.srcObject = cameraStream;
+        await video.play();
+
+        setStatus("Загружаю распознавание руки…");
+
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm"
+        );
+
+        const commonOptions = {
+          runningMode: "VIDEO",
+          numHands: 2,
+          minHandDetectionConfidence: 0.55,
+          minHandPresenceConfidence: 0.55,
+          minTrackingConfidence: 0.55
+        };
+
+        const modelAssetPath =
+          "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+
+        try {
+          landmarker = await HandLandmarker.createFromOptions(vision, {
+            ...commonOptions,
+            baseOptions: {
+              modelAssetPath,
+              delegate: "GPU"
+            }
+          });
+        } catch (gpuError) {
+          console.warn("GPU недоступен, переключаюсь на CPU:", gpuError);
+
+          landmarker = await HandLandmarker.createFromOptions(vision, {
+            ...commonOptions,
+            baseOptions: {
+              modelAssetPath,
+              delegate: "CPU"
+            }
+          });
+        }
+
+        running = true;
+        startButton.textContent = "Камера включена";
+        setStatus("1 палец — рисовать, 2 — стирать");
+        requestAnimationFrame(processFrame);
+      } catch (error) {
+        console.error(error);
+        setStatus(`Не удалось запустить: ${error.message || error}`);
+        startButton.disabled = false;
+        startButton.textContent = "Попробовать снова";
+
+        cameraStream?.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+    });
+
+    addEventListener("beforeunload", () => {
+      running = false;
+      clearTimeout(cinemaTimer);
+      cameraStream?.getTracks().forEach(track => track.stop());
+      landmarker?.close?.();
+    });
+  </script>
+</body>
+</html>
