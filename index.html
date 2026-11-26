@@ -18,8 +18,7 @@
       font-family: Arial, sans-serif;
     }
 
-    #camera,
-    canvas {
+    #camera, canvas {
       position: fixed;
       inset: 0;
       width: 100%;
@@ -121,7 +120,6 @@
       border: 1px solid #087fa8;
       border-radius: 9px;
       background: #03131b;
-      cursor: pointer;
     }
 
     #sizePicker {
@@ -288,7 +286,7 @@
       <div class="gesture-guide">
         <strong>Жесты:</strong><br>
         ☝️ Один указательный палец — рисовать.<br>
-        ✌️ Указательный и средний пальцы — стирать.<br>
+        ✌️ Указательный и средний — стирать.<br>
         ❤️ Две руки: указательные пальцы рядом сверху, большие — снизу.<br>
         🤟 Три сведённых пальца — открыть настройки.<br>
         🙌 Две раскрытые ладони без движения — Absolute Cinema.<br>
@@ -303,11 +301,11 @@
   </section>
 
   <script type="module">
-    const MEDIAPIPE_VERSION = "0.10.21";
-    const WASM_URL =
-      `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}/wasm`;
+    const VERSION = "0.10.21";
     const BUNDLE_URL =
-      `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_VERSION}/vision_bundle.mjs`;
+      `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${VERSION}/vision_bundle.mjs`;
+    const WASM_URL =
+      `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${VERSION}/wasm`;
     const MODEL_URL =
       "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
 
@@ -344,8 +342,9 @@
     let running = false;
     let lastVideoTime = -1;
 
-    let smoothedHands = [];
+    let handFilters = [];
     let previousPoint = null;
+    let previousMidpoint = null;
     let previousMode = null;
 
     let menuGestureFrames = 0;
@@ -366,21 +365,93 @@
     let drawingColor = colorPicker.value;
     let brushSize = Number(sizePicker.value);
 
+    // Сглаживание координат: скорость влияет на отзывчивость фильтра.
+    const FILTER_MIN_CUTOFF = 1.7;
+    const FILTER_BETA = 0.045;
+    const FILTER_D_CUTOFF = 1.0;
+
     function setStatus(message) {
       status.textContent = message;
     }
 
-    function withTimeout(promise, milliseconds, message) {
-      let timer;
-
-      const timeout = new Promise((_, reject) => {
-        timer = setTimeout(() => reject(new Error(message)), milliseconds);
-      });
-
-      return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+    function alphaFor(cutoff, dt) {
+      const tau = 1 / (2 * Math.PI * cutoff);
+      return 1 / (1 + tau / dt);
     }
 
-    // Сначала пробуем локальное фото, затем — сетевой вариант.
+    function filterValue(filter, key, derivativeKey, input, dt) {
+      const rawDerivative = (input - filter[key]) / dt;
+      const derivativeAlpha = alphaFor(FILTER_D_CUTOFF, dt);
+
+      filter[derivativeKey] +=
+        derivativeAlpha * (rawDerivative - filter[derivativeKey]);
+
+      const cutoff =
+        FILTER_MIN_CUTOFF + FILTER_BETA * Math.abs(filter[derivativeKey]);
+
+      const valueAlpha = alphaFor(cutoff, dt);
+      filter[key] += valueAlpha * (input - filter[key]);
+
+      return filter[key];
+    }
+
+    function smoothHands(hands, now) {
+      if (!hands.length) {
+        handFilters = [];
+        return [];
+      }
+
+      const ordered = [...hands].sort((a, b) => a[0].x - b[0].x);
+
+      if (
+        handFilters.length !== ordered.length ||
+        handFilters.some(hand => hand.length !== ordered[0].length)
+      ) {
+        handFilters = ordered.map(hand =>
+          hand.map(point => ({
+            x: point.x,
+            y: point.y,
+            z: point.z || 0,
+            dx: 0,
+            dy: 0,
+            dz: 0,
+            time: now
+          }))
+        );
+
+        return handFilters.map(hand =>
+          hand.map(point => ({ x: point.x, y: point.y, z: point.z }))
+        );
+      }
+
+      const result = [];
+
+      for (let h = 0; h < ordered.length; h++) {
+        const smoothedHand = [];
+
+        for (let i = 0; i < ordered[h].length; i++) {
+          const target = ordered[h][i];
+          const filter = handFilters[h][i];
+          const dt = Math.max(1 / 120, Math.min(0.1, (now - filter.time) / 1000));
+
+          filter.x = filterValue(filter, "x", "dx", target.x, dt);
+          filter.y = filterValue(filter, "y", "dy", target.y, dt);
+          filter.z = filterValue(filter, "z", "dz", target.z || 0, dt);
+          filter.time = now;
+
+          smoothedHand.push({
+            x: filter.x,
+            y: filter.y,
+            z: filter.z
+          });
+        }
+
+        result.push(smoothedHand);
+      }
+
+      return result;
+    }
+
     cinemaPhoto.addEventListener("error", () => {
       if (cinemaPhoto.dataset.fallbackUsed === "true") {
         cinemaPhoto.alt = "Фото не загрузилось. Проверь файл absolute-cinema.jpg.";
@@ -397,12 +468,12 @@
       const height = innerHeight;
       const dpr = Math.min(devicePixelRatio || 1, 2);
 
-      const savedDrawing = document.createElement("canvas");
-      savedDrawing.width = drawingCanvas.width;
-      savedDrawing.height = drawingCanvas.height;
+      const saved = document.createElement("canvas");
+      saved.width = drawingCanvas.width;
+      saved.height = drawingCanvas.height;
 
-      if (savedDrawing.width && savedDrawing.height) {
-        savedDrawing.getContext("2d").drawImage(drawingCanvas, 0, 0);
+      if (saved.width && saved.height) {
+        saved.getContext("2d").drawImage(drawingCanvas, 0, 0);
       }
 
       for (const canvas of [drawingCanvas, overlayCanvas]) {
@@ -413,10 +484,10 @@
         canvas.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0);
       }
 
-      if (savedDrawing.width && savedDrawing.height) {
+      if (saved.width && saved.height) {
         draw.drawImage(
-          savedDrawing,
-          0, 0, savedDrawing.width, savedDrawing.height,
+          saved,
+          0, 0, saved.width, saved.height,
           0, 0, width, height
         );
       }
@@ -446,44 +517,6 @@
       };
     }
 
-    function smoothHands(hands) {
-      if (!hands.length) {
-        smoothedHands = [];
-        return [];
-      }
-
-      const orderedHands = [...hands].sort((a, b) => a[0].x - b[0].x);
-
-      if (smoothedHands.length !== orderedHands.length) {
-        smoothedHands = orderedHands.map(hand =>
-          hand.map(point => ({
-            x: point.x,
-            y: point.y,
-            z: point.z || 0
-          }))
-        );
-        return smoothedHands;
-      }
-
-      for (let h = 0; h < orderedHands.length; h++) {
-        for (let i = 0; i < orderedHands[h].length; i++) {
-          const target = orderedHands[h][i];
-          const current = smoothedHands[h][i];
-          const movement = Math.hypot(
-            target.x - current.x,
-            target.y - current.y
-          );
-          const blend = Math.min(0.72, 0.24 + movement * 3);
-
-          current.x += (target.x - current.x) * blend;
-          current.y += (target.y - current.y) * blend;
-          current.z += ((target.z || 0) - current.z) * blend;
-        }
-      }
-
-      return smoothedHands;
-    }
-
     function fingerUp(hand, tip, joint) {
       return hand[tip].y < hand[joint].y - 0.015;
     }
@@ -496,23 +529,20 @@
 
       if (index && !middle && !ring && !pinky) return "draw";
       if (index && middle && !ring && !pinky) return "erase";
+
       return null;
     }
 
     function hasMenuPose(hand) {
-      const index = fingerUp(hand, 8, 6);
-      const middle = fingerUp(hand, 12, 10);
-      const ring = fingerUp(hand, 16, 14);
-      const pinky = fingerUp(hand, 20, 18);
-
-      if (!index || !middle || !ring || pinky) return false;
+      if (
+        !fingerUp(hand, 8, 6) ||
+        !fingerUp(hand, 12, 10) ||
+        !fingerUp(hand, 16, 14) ||
+        fingerUp(hand, 20, 18)
+      ) return false;
 
       const distance = (a, b) =>
-        Math.hypot(
-          a.x - b.x,
-          a.y - b.y,
-          (a.z || 0) - (b.z || 0)
-        );
+        Math.hypot(a.x - b.x, a.y - b.y, (a.z || 0) - (b.z || 0));
 
       const palmScale = distance(hand[0], hand[9]);
       if (palmScale < 0.0001) return false;
@@ -528,13 +558,13 @@
       const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
       const wrist = hand[0];
 
-      const extendedFingers = [
+      const extended = [
         [8, 6], [12, 10], [16, 14], [20, 18]
       ].filter(([tip, joint]) =>
         distance(hand[tip], wrist) > distance(hand[joint], wrist) * 1.02
       ).length;
 
-      return extendedFingers >= 4;
+      return extended >= 4;
     }
 
     function resetSixSevenTracking() {
@@ -574,7 +604,6 @@
           sixSevenReversals = 0;
           sixSevenDirection = 0;
         }
-
         return { active: false, triggered: false };
       }
 
@@ -626,27 +655,52 @@
       }, 3000);
     }
 
-    function drawNeonLine(context, from, to, width, color = drawingColor) {
+    function strokePath(context, path, width, color) {
       context.save();
-      context.beginPath();
-      context.moveTo(from.x, from.y);
-      context.lineTo(to.x, to.y);
       context.lineCap = "round";
       context.lineJoin = "round";
+
       context.strokeStyle = color;
       context.lineWidth = width;
       context.shadowColor = color;
-      context.shadowBlur = Math.max(8, width * 3);
-      context.stroke();
+      context.shadowBlur = Math.max(8, width * 2.4);
+      context.stroke(path);
 
-      context.beginPath();
-      context.moveTo(from.x, from.y);
-      context.lineTo(to.x, to.y);
       context.strokeStyle = "#e8fcff";
-      context.lineWidth = Math.max(1.5, width * 0.24);
-      context.shadowBlur = 4;
-      context.stroke();
+      context.lineWidth = Math.max(1.5, width * 0.23);
+      context.shadowBlur = 3;
+      context.stroke(path);
+
       context.restore();
+    }
+
+    function drawSmoothStroke(from, to) {
+      if (!from) {
+        draw.save();
+        draw.beginPath();
+        draw.arc(to.x, to.y, brushSize / 2, 0, Math.PI * 2);
+        draw.fillStyle = drawingColor;
+        draw.shadowColor = drawingColor;
+        draw.shadowBlur = brushSize * 2;
+        draw.fill();
+        draw.restore();
+
+        previousMidpoint = { ...to };
+        return;
+      }
+
+      const midpoint = {
+        x: (from.x + to.x) / 2,
+        y: (from.y + to.y) / 2
+      };
+
+      const start = previousMidpoint || from;
+      const path = new Path2D();
+      path.moveTo(start.x, start.y);
+      path.quadraticCurveTo(from.x, from.y, midpoint.x, midpoint.y);
+
+      strokePath(draw, path, brushSize, drawingColor);
+      previousMidpoint = midpoint;
     }
 
     function eraseLine(from, to) {
@@ -676,10 +730,10 @@
           overlay.lineTo(second.x, second.y);
           overlay.lineCap = "round";
           overlay.lineJoin = "round";
-          overlay.strokeStyle = "rgba(0, 205, 255, .95)";
+          overlay.strokeStyle = "rgba(0, 205, 255, .92)";
           overlay.lineWidth = 3;
           overlay.shadowColor = "#00bfff";
-          overlay.shadowBlur = 9;
+          overlay.shadowBlur = 8;
           overlay.stroke();
         }
 
@@ -691,7 +745,7 @@
           overlay.arc(point.x, point.y, 3, 0, Math.PI * 2);
           overlay.fillStyle = "#eaffff";
           overlay.shadowColor = "#00bfff";
-          overlay.shadowBlur = 9;
+          overlay.shadowBlur = 8;
           overlay.fill();
         }
       }
@@ -710,7 +764,7 @@
       overlay.lineWidth = 2;
       overlay.strokeStyle = mode === "erase" ? "#ff72d2" : drawingColor;
       overlay.shadowColor = mode === "erase" ? "#ff35bd" : drawingColor;
-      overlay.shadowBlur = 16;
+      overlay.shadowBlur = 15;
       overlay.stroke();
       overlay.restore();
     }
@@ -718,41 +772,38 @@
     function detectHeart(hands) {
       if (hands.length < 2) return null;
 
-      const orderedHands = hands
+      const sorted = hands
         .map(hand => ({ hand, wrist: mapPoint(hand[0]) }))
         .filter(item => item.wrist)
         .sort((a, b) => a.wrist.x - b.wrist.x);
 
-      if (orderedHands.length < 2) return null;
+      if (sorted.length < 2) return null;
 
-      const left = orderedHands[0].hand;
-      const right = orderedHands[1].hand;
+      const left = sorted[0].hand;
+      const right = sorted[1].hand;
 
-      const leftIndex = mapPoint(left[8]);
-      const rightIndex = mapPoint(right[8]);
-      const leftThumb = mapPoint(left[4]);
-      const rightThumb = mapPoint(right[4]);
-      const leftWrist = mapPoint(left[0]);
-      const rightWrist = mapPoint(right[0]);
+      const li = mapPoint(left[8]);
+      const ri = mapPoint(right[8]);
+      const lt = mapPoint(left[4]);
+      const rt = mapPoint(right[4]);
+      const lw = mapPoint(left[0]);
+      const rw = mapPoint(right[0]);
 
-      if (!leftIndex || !rightIndex || !leftThumb || !rightThumb ||
-          !leftWrist || !rightWrist) return null;
+      if (!li || !ri || !lt || !rt || !lw || !rw) return null;
 
       const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-      const wrists = distance(leftWrist, rightWrist);
+      const wrists = distance(lw, rw);
 
-      const isHeart =
-        wrists > 60 &&
-        distance(leftIndex, rightIndex) < wrists * 0.55 &&
-        distance(leftThumb, rightThumb) < wrists * 0.55 &&
-        (leftIndex.y + rightIndex.y) / 2 <
-          (leftThumb.y + rightThumb.y) / 2 + 20;
-
-      if (!isHeart) return null;
+      if (
+        wrists < 60 ||
+        distance(li, ri) > wrists * 0.55 ||
+        distance(lt, rt) > wrists * 0.55 ||
+        (li.y + ri.y) / 2 > (lt.y + rt.y) / 2 + 20
+      ) return null;
 
       return {
-        x: (leftIndex.x + rightIndex.x + leftThumb.x + rightThumb.x) / 4,
-        y: (leftIndex.y + rightIndex.y + leftThumb.y + rightThumb.y) / 4,
+        x: (li.x + ri.x + lt.x + rt.x) / 4,
+        y: (li.y + ri.y + lt.y + rt.y) / 4,
         size: Math.max(90, Math.min(260, wrists * 0.8))
       };
     }
@@ -775,14 +826,21 @@
         });
       }
 
+      const path = new Path2D();
+      path.moveTo(points[0].x, points[0].y);
+
       for (let i = 1; i < points.length; i++) {
-        drawNeonLine(draw, points[i - 1], points[i], Math.max(4, brushSize));
+        path.lineTo(points[i].x, points[i].y);
       }
+
+      path.closePath();
+      strokePath(draw, path, Math.max(4, brushSize), drawingColor);
     }
 
     function openMenu() {
       modeMenu.classList.add("open");
       previousPoint = null;
+      previousMidpoint = null;
       previousMode = null;
       setStatus("Меню открыто");
     }
@@ -790,11 +848,11 @@
     function closeMenu() {
       modeMenu.classList.remove("open");
       previousPoint = null;
+      previousMidpoint = null;
       previousMode = null;
       setStatus("Меню закрыто");
     }
 
-    // Компьютер: закрыть наведением мыши.
     readyButton.addEventListener("pointerenter", event => {
       if (
         event.pointerType === "mouse" &&
@@ -804,7 +862,6 @@
       }
     });
 
-    // Телефон и компьютер: закрыть нажатием/касанием.
     readyButton.addEventListener("click", () => {
       if (modeMenu.classList.contains("open")) closeMenu();
     });
@@ -821,35 +878,46 @@
     document.getElementById("clearButton").addEventListener("click", () => {
       draw.clearRect(0, 0, innerWidth, innerHeight);
       previousPoint = null;
+      previousMidpoint = null;
       previousMode = null;
       setStatus("Рисунок очищен");
     });
 
-    async function loadHandModel() {
-      setStatus("Подключаю библиотеку распознавания…");
+    function withTimeout(promise, milliseconds, message) {
+      let timer;
 
-      const visionModule = await withTimeout(
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(message)), milliseconds);
+      });
+
+      return Promise.race([promise, timeout])
+        .finally(() => clearTimeout(timer));
+    }
+
+    async function loadHandModel() {
+      setStatus("Подключаю распознавание…");
+
+      const module = await withTimeout(
         import(BUNDLE_URL),
         30000,
-        "Не загрузилась библиотека распознавания за 30 секунд. Проверь интернет и обнови страницу."
+        "Не загрузилась библиотека распознавания. Проверь интернет."
       );
 
-      FilesetResolver = visionModule.FilesetResolver;
-      HandLandmarker = visionModule.HandLandmarker;
+      FilesetResolver = module.FilesetResolver;
+      HandLandmarker = module.HandLandmarker;
 
-      setStatus("Загружаю WASM-файлы…");
+      setStatus("Загружаю WASM…");
 
       const vision = await withTimeout(
         FilesetResolver.forVisionTasks(WASM_URL),
         30000,
-        "Не загрузились WASM-файлы за 30 секунд. Проверь интернет."
+        "Не загрузились WASM-файлы. Проверь интернет."
       );
 
       setStatus("Скачиваю модель руки…");
 
       const controller = new AbortController();
-      const downloadTimer = setTimeout(() => controller.abort(), 60000);
-
+      const timer = setTimeout(() => controller.abort(), 60000);
       let modelBytes;
 
       try {
@@ -859,22 +927,21 @@
         });
 
         if (!response.ok) {
-          throw new Error(`Сервер модели ответил HTTP ${response.status}.`);
+          throw new Error(`Ошибка загрузки модели: HTTP ${response.status}`);
         }
 
         modelBytes = new Uint8Array(await response.arrayBuffer());
 
         if (modelBytes.length < 100000) {
-          throw new Error("Скачанный файл модели слишком маленький или повреждён.");
+          throw new Error("Файл модели загрузился не полностью.");
         }
       } catch (error) {
         if (error.name === "AbortError") {
-          throw new Error("Модель не скачалась за 60 секунд. Проверь интернет.");
+          throw new Error("Модель не скачалась за минуту. Проверь интернет.");
         }
-
         throw error;
       } finally {
-        clearTimeout(downloadTimer);
+        clearTimeout(timer);
       }
 
       const isMobile =
@@ -889,33 +956,31 @@
         minTrackingConfidence: 0.55
       };
 
-      async function createWithDelegate(delegate) {
-        return withTimeout(
-          HandLandmarker.createFromOptions(vision, {
-            ...options,
-            baseOptions: {
-              modelAssetBuffer: modelBytes.slice(),
-              delegate
-            }
-          }),
-          45000,
-          `Распознавание не запустилось через ${delegate} за 45 секунд. Попробуй обновить страницу.`
-        );
-      }
+      const create = delegate => withTimeout(
+        HandLandmarker.createFromOptions(vision, {
+          ...options,
+          baseOptions: {
+            modelAssetBuffer: modelBytes.slice(),
+            delegate
+          }
+        }),
+        45000,
+        `Распознавание через ${delegate} не запустилось.`
+      );
 
       if (isMobile) {
         setStatus("Запускаю распознавание на телефоне…");
-        return createWithDelegate("CPU");
+        return create("CPU");
       }
 
       setStatus("Запускаю распознавание…");
 
       try {
-        return await createWithDelegate("GPU");
-      } catch (gpuError) {
-        console.warn("GPU не запустился, пробую CPU:", gpuError);
-        setStatus("GPU недоступен — запускаю через CPU…");
-        return createWithDelegate("CPU");
+        return await create("GPU");
+      } catch (error) {
+        console.warn("GPU недоступен, запускаю CPU:", error);
+        setStatus("Переключаюсь на CPU…");
+        return create("CPU");
       }
     }
 
@@ -932,8 +997,9 @@
 
         lastVideoTime = video.currentTime;
 
-        const result = landmarker.detectForVideo(video, performance.now());
-        const hands = smoothHands(result.landmarks || []);
+        const now = performance.now();
+        const result = landmarker.detectForVideo(video, now);
+        const hands = smoothHands(result.landmarks || [], now);
 
         drawSkeleton(hands);
 
@@ -962,6 +1028,7 @@
           if (!heartWasDetected) drawHeart(heart);
           heartWasDetected = true;
           previousPoint = null;
+          previousMidpoint = null;
           previousMode = null;
           setStatus("Сердце нарисовано");
           return;
@@ -969,7 +1036,6 @@
 
         heartWasDetected = false;
 
-        const now = performance.now();
         const sixSeven = detectSixSevenMotion(hands, now);
 
         if (sixSeven.triggered) showSixSeven();
@@ -978,6 +1044,7 @@
           cinemaGestureFrames = 0;
           cinemaGestureLatched = false;
           previousPoint = null;
+          previousMidpoint = null;
           previousMode = null;
           setStatus("Двигай раскрытыми ладонями вверх-вниз по очереди");
           return;
@@ -997,6 +1064,7 @@
           }
 
           previousPoint = null;
+          previousMidpoint = null;
           previousMode = null;
 
           setStatus(
@@ -1013,6 +1081,7 @@
         if (!hands.length) {
           setStatus("Покажи руку в камеру");
           previousPoint = null;
+          previousMidpoint = null;
           previousMode = null;
           return;
         }
@@ -1022,6 +1091,7 @@
         if (!mode) {
           setStatus("1 палец — рисовать, 2 — стирать");
           previousPoint = null;
+          previousMidpoint = null;
           previousMode = null;
           return;
         }
@@ -1034,9 +1104,12 @@
         if (mode === "draw") {
           setStatus("Рисуешь");
 
-          if (previousPoint && previousMode === "draw") {
-            drawNeonLine(draw, previousPoint, point, brushSize);
+          if (previousMode !== "draw") {
+            previousPoint = null;
+            previousMidpoint = null;
           }
+
+          drawSmoothStroke(previousPoint, point);
         } else {
           setStatus("Стираешь");
 
@@ -1045,14 +1118,17 @@
           } else {
             eraseLine(point, point);
           }
+
+          previousMidpoint = null;
         }
 
         previousPoint = { ...point };
         previousMode = mode;
       } catch (error) {
         console.error("Ошибка обработки кадра:", error);
-        setStatus(`Ошибка распознавания: ${error.message || error}`);
+        setStatus(`Ошибка: ${error.message || error}`);
         previousPoint = null;
+        previousMidpoint = null;
         previousMode = null;
       }
     }
@@ -1065,7 +1141,7 @@
 
       try {
         if (!navigator.mediaDevices?.getUserMedia) {
-          throw new Error("Камера недоступна. Открой сайт через HTTPS.");
+          throw new Error("Открой сайт через HTTPS или localhost.");
         }
 
         cameraStream = await navigator.mediaDevices.getUserMedia({
@@ -1090,11 +1166,12 @@
       } catch (error) {
         console.error("Не удалось запустить:", error);
 
-        const message = error.name === "NotAllowedError"
-          ? "Разреши доступ к камере в настройках браузера."
-          : (error.message || "Неизвестная ошибка запуска.");
+        setStatus(
+          error.name === "NotAllowedError"
+            ? "Разреши доступ к камере в настройках браузера."
+            : (error.message || "Неизвестная ошибка запуска.")
+        );
 
-        setStatus(message);
         startButton.disabled = false;
         startButton.textContent = "Попробовать снова";
 
