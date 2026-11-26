@@ -31,7 +31,9 @@
       transform: scaleX(-1);
     }
 
-    canvas { pointer-events: none; }
+    canvas {
+      pointer-events: none;
+    }
 
     #controls {
       position: fixed;
@@ -46,12 +48,15 @@
       padding: 9px;
       border: 1px solid #164d68;
       border-radius: 14px;
-      background: rgb(0 0 0 / 82%);
+      background: rgb(0 0 0 / 84%);
       box-shadow: 0 0 18px rgb(0 180 255 / 25%);
       backdrop-filter: blur(10px);
     }
 
-    button, input { touch-action: manipulation; }
+    button,
+    input {
+      touch-action: manipulation;
+    }
 
     button {
       min-height: 44px;
@@ -84,11 +89,14 @@
       place-items: center;
       overflow-y: auto;
       padding: 18px;
-      background: rgb(0 0 0 / 68%);
+      background: rgb(0 0 0 / 72%);
       backdrop-filter: blur(5px);
+      touch-action: auto;
     }
 
-    #modeMenu.open { display: grid; }
+    #modeMenu.open {
+      display: grid;
+    }
 
     .menu-card {
       width: min(100%, 440px);
@@ -115,8 +123,8 @@
     }
 
     #colorPicker {
-      width: 56px;
-      height: 42px;
+      width: 64px;
+      height: 44px;
       padding: 3px;
       border: 1px solid #087fa8;
       border-radius: 9px;
@@ -129,7 +137,9 @@
       accent-color: #00cfff;
     }
 
-    #sizeValue { color: #9ceeff; }
+    #sizeValue {
+      color: #9ceeff;
+    }
 
     .gesture-guide {
       margin: 18px 0;
@@ -143,13 +153,13 @@
 
     .ready-button {
       width: 100%;
-      min-height: 48px;
+      min-height: 50px;
       font-size: 16px;
     }
 
     .hover-note {
       margin: 10px 0 0;
-      color: #88aab4;
+      color: #a9c3ca;
       font-size: 12px;
       text-align: center;
     }
@@ -161,12 +171,14 @@
       display: none;
       place-items: center;
       padding: 20px;
-      background: rgb(0 0 0 / 88%);
+      background: rgb(0 0 0 / 90%);
       pointer-events: none;
       animation: fade-in .2s ease-out;
     }
 
-    #cinemaMeme.visible { display: grid; }
+    #cinemaMeme.visible {
+      display: grid;
+    }
 
     .meme-card {
       position: relative;
@@ -188,8 +200,8 @@
     .meme-caption {
       position: absolute;
       top: 5%;
-      left: 4%;
       right: 4%;
+      left: 4%;
       color: #fff;
       font-family: Georgia, serif;
       font-size: clamp(27px, 8vw, 58px);
@@ -206,10 +218,24 @@
     }
 
     @media (max-width: 480px) {
-      #controls { gap: 6px; padding: 8px; }
-      #controls button { padding: 0 9px; font-size: 12px; }
-      #status { max-width: 130px; font-size: 11px; }
-      .menu-card { padding: 16px; }
+      #controls {
+        gap: 6px;
+        padding: 8px;
+      }
+
+      #controls button {
+        padding: 0 9px;
+        font-size: 12px;
+      }
+
+      #status {
+        max-width: 125px;
+        font-size: 11px;
+      }
+
+      .menu-card {
+        padding: 16px;
+      }
     }
   </style>
 </head>
@@ -256,14 +282,18 @@
       <div class="gesture-guide">
         <strong>Жесты:</strong><br>
         ☝️ Один указательный палец — рисовать.<br>
-        ✌️ Указательный и средний — стирать.<br>
+        ✌️ Указательный и средний пальцы — стирать.<br>
         ❤️ Две руки: указательные пальцы рядом сверху, большие — снизу.<br>
-        🤟 Три сведённых кончика пальцев — открыть настройки.<br>
-        🙌 Две раскрытые ладони — показать Absolute Cinema.
+        🤟 Три сведённых пальца — открыть настройки.<br>
+        🙌 Две раскрытые ладони — показать мем на 3 секунды.
       </div>
 
-      <button class="ready-button" id="readyButton" type="button">Готово</button>
-      <p class="hover-note">Нажми «Готово» на телефоне или наведи на неё мышью.</p>
+      <button class="ready-button" id="readyButton" type="button">
+        Готово
+      </button>
+      <p class="hover-note">
+        Нажми «Готово» на телефоне или наведи мышь на кнопку на компьютере.
+      </p>
     </div>
   </section>
 
@@ -318,8 +348,9 @@
     let drawingColor = colorPicker.value;
     let brushSize = Number(sizePicker.value);
 
+    // Если локального фото нет, пробуем загрузить запасную картинку из интернета.
     cinemaPhoto.addEventListener("error", () => {
-      if (cinemaPhoto.dataset.fallbackUsed === "true") return;
+      if (cinemaPhoto.dataset.fallbackUsed) return;
 
       cinemaPhoto.dataset.fallbackUsed = "true";
       cinemaPhoto.src =
@@ -360,7 +391,7 @@
       }
     }
 
-    window.addEventListener("resize", resizeCanvases);
+    addEventListener("resize", resizeCanvases);
     resizeCanvases();
 
     function mapPoint(point) {
@@ -390,10 +421,10 @@
         return [];
       }
 
-      const ordered = [...hands].sort((a, b) => a[0].x - b[0].x);
+      const orderedHands = [...hands].sort((a, b) => a[0].x - b[0].x);
 
-      if (smoothedHands.length !== ordered.length) {
-        smoothedHands = ordered.map(hand =>
+      if (smoothedHands.length !== orderedHands.length) {
+        smoothedHands = orderedHands.map(hand =>
           hand.map(point => ({
             x: point.x,
             y: point.y,
@@ -403,15 +434,15 @@
         return smoothedHands;
       }
 
-      for (let h = 0; h < ordered.length; h++) {
-        for (let i = 0; i < ordered[h].length; i++) {
-          const target = ordered[h][i];
+      for (let h = 0; h < orderedHands.length; h++) {
+        for (let i = 0; i < orderedHands[h].length; i++) {
+          const target = orderedHands[h][i];
           const current = smoothedHands[h][i];
-          const distance = Math.hypot(
+          const movement = Math.hypot(
             target.x - current.x,
             target.y - current.y
           );
-          const blend = Math.min(0.72, 0.24 + distance * 3);
+          const blend = Math.min(0.72, 0.24 + movement * 3);
 
           current.x += (target.x - current.x) * blend;
           current.y += (target.y - current.y) * blend;
@@ -464,13 +495,14 @@
     }
 
     function isOpenHand(hand) {
-      const distance = (a, b) =>
-        Math.hypot(a.x - b.x, a.y - b.y);
-
+      const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
       const wrist = hand[0];
 
       const extendedFingers = [
-        [8, 6], [12, 10], [16, 14], [20, 18]
+        [8, 6],
+        [12, 10],
+        [16, 14],
+        [20, 18]
       ].filter(([tip, joint]) =>
         distance(hand[tip], wrist) > distance(hand[joint], wrist) * 1.02
       ).length;
@@ -503,10 +535,14 @@
       context.shadowBlur = Math.max(8, width * 3);
       context.stroke();
 
+      context.beginPath();
+      context.moveTo(from.x, from.y);
+      context.lineTo(to.x, to.y);
       context.strokeStyle = "#e8fcff";
       context.lineWidth = Math.max(1.5, width * 0.24);
       context.shadowBlur = 4;
       context.stroke();
+
       context.restore();
     }
 
@@ -579,15 +615,15 @@
     function detectHeart(hands) {
       if (hands.length < 2) return null;
 
-      const ordered = hands
+      const orderedHands = hands
         .map(hand => ({ hand, wrist: mapPoint(hand[0]) }))
         .filter(item => item.wrist)
         .sort((a, b) => a.wrist.x - b.wrist.x);
 
-      if (ordered.length < 2) return null;
+      if (orderedHands.length < 2) return null;
 
-      const left = ordered[0].hand;
-      const right = ordered[1].hand;
+      const left = orderedHands[0].hand;
+      const right = orderedHands[1].hand;
 
       const leftIndex = mapPoint(left[8]);
       const rightIndex = mapPoint(right[8]);
@@ -603,12 +639,12 @@
       ) return null;
 
       const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-      const wristDistance = distance(leftWrist, rightWrist);
+      const wrists = distance(leftWrist, rightWrist);
 
       const isHeart =
-        wristDistance > 60 &&
-        distance(leftIndex, rightIndex) < wristDistance * 0.55 &&
-        distance(leftThumb, rightThumb) < wristDistance * 0.55 &&
+        wrists > 60 &&
+        distance(leftIndex, rightIndex) < wrists * 0.55 &&
+        distance(leftThumb, rightThumb) < wrists * 0.55 &&
         (leftIndex.y + rightIndex.y) / 2 <
           (leftThumb.y + rightThumb.y) / 2 + 20;
 
@@ -623,7 +659,7 @@
           leftIndex.y + rightIndex.y +
           leftThumb.y + rightThumb.y
         ) / 4,
-        size: Math.max(90, Math.min(260, wristDistance * 0.8))
+        size: Math.max(90, Math.min(260, wrists * 0.8))
       };
     }
 
@@ -669,6 +705,7 @@
       setStatus("Меню закрыто");
     }
 
+    // Закрыть наведением мыши на компьютере.
     readyButton.addEventListener("pointerenter", event => {
       if (
         event.pointerType === "mouse" &&
@@ -678,8 +715,11 @@
       }
     });
 
+    // Закрыть нажатием или касанием на телефоне.
     readyButton.addEventListener("click", () => {
-      if (modeMenu.classList.contains("open")) closeMenu();
+      if (modeMenu.classList.contains("open")) {
+        closeMenu();
+      }
     });
 
     colorPicker.addEventListener("input", () => {
@@ -700,6 +740,7 @@
 
     function processFrame() {
       if (!running) return;
+
       requestAnimationFrame(processFrame);
 
       try {
@@ -707,7 +748,9 @@
           !landmarker ||
           video.readyState < 2 ||
           video.currentTime === lastVideoTime
-        ) return;
+        ) {
+          return;
+        }
 
         lastVideoTime = video.currentTime;
 
@@ -738,7 +781,9 @@
         const heart = detectHeart(hands);
 
         if (heart) {
-          if (!heartWasDetected) drawHeart(heart);
+          if (!heartWasDetected) {
+            drawHeart(heart);
+          }
 
           heartWasDetected = true;
           previousPoint = null;
@@ -757,23 +802,19 @@
         if (cinemaPose) {
           cinemaGestureFrames++;
 
-          if (cinemaGestureFrames >= 18 && !cinemaGestureLatched) {
+          if (cinemaGestureFrames >= 8 && !cinemaGestureLatched) {
             cinemaGestureLatched = true;
             showCinemaMeme();
           }
 
           previousPoint = null;
           previousMode = null;
-          setStatus(
-            cinemaGestureLatched
-              ? "ABSOLUTE CINEMA"
-              : "Две раскрытые ладони — Absolute Cinema"
-          );
+          setStatus("ABSOLUTE CINEMA");
           return;
+        } else {
+          cinemaGestureFrames = 0;
+          cinemaGestureLatched = false;
         }
-
-        cinemaGestureFrames = 0;
-        cinemaGestureLatched = false;
 
         if (!hands.length) {
           setStatus("Покажи руку в камеру");
@@ -828,7 +869,7 @@
 
       try {
         if (!navigator.mediaDevices?.getUserMedia) {
-          throw new Error("Открой сайт через HTTPS или localhost.");
+          throw new Error("Открой страницу через HTTPS или localhost.");
         }
 
         cameraStream = await navigator.mediaDevices.getUserMedia({
@@ -870,7 +911,7 @@
             }
           });
         } catch (gpuError) {
-          console.warn("GPU недоступен, использую CPU:", gpuError);
+          console.warn("GPU недоступен, переключаюсь на CPU:", gpuError);
 
           landmarker = await HandLandmarker.createFromOptions(vision, {
             ...options,
@@ -893,11 +934,10 @@
 
         cameraStream?.getTracks().forEach(track => track.stop());
         cameraStream = null;
-        video.srcObject = null;
       }
     });
 
-    window.addEventListener("beforeunload", () => {
+    addEventListener("beforeunload", () => {
       running = false;
       clearTimeout(cinemaTimer);
       cameraStream?.getTracks().forEach(track => track.stop());
